@@ -12,14 +12,16 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - ls -la www
-      - rm -rf ios || true
+      - rm -rf ios || true  # wipe old ios folder, ignore if gone
       - npx cap add ios
       - npx cap sync ios
-      - ls -la ios/App  # debug: should show Podfile now
+      - ls -la ios/App  # should show Podfile now
       - cd ios/App && pod install
       - cd ../../
       - xcode-project use-profiles
       - cd ios/App
       - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
