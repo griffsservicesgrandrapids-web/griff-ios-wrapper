@@ -3,26 +3,22 @@ workflows:
     name: Gig Connect iOS Build
     max_build_duration: 60
     integrations:
-      app_store_connect: APIKey
+      app_store_connect: APIkey  # no space, match your UI name
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.griff.gigconnect
     scripts:
-  - npm ci
-  - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
-  - ls -la www  # debug: show if web files exist
-  - npx cap add ios --verbose
-  - npx cap sync ios --verbose
-  - ls -la ios/App  # debug: show if Podfile appeared
-  - cd ios/App && pod install
-  - xcode-project use-profiles
-  - |
-    cd ios/App
-    xcode-project build-ipa --workspace App.xcworkspace --scheme App
+      - npm ci
+      - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
+      - ls -la www
+      - npx cap add ios --verbose
+      - npx cap sync ios --verbose
+      - ls -la ios/App
+      - cd ios/App && pod install
+      - xcode-project use-profiles
+      - |
+        cd ios/App
+        xcode-project build-ipa --workspace App.xcworkspace --scheme App
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
