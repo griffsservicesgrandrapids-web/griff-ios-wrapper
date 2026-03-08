@@ -3,20 +3,20 @@ workflows:
     name: Gig Connect iOS Build
     max_build_duration: 60
     integrations:
-      app_store_connect: APIkey API Key  # 885V2934YV
+      app_store_connect: API Key
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.griff.gigconnect  # match your capacitor.config.json
+        bundle_identifier: com.griff.gigconnect
     scripts:
-  - npm ci
-  - npm install @capacitor/cli @capacitor/core @capacitor/ios --save-dev
-  - npx cap sync ios
-  - cd ios/App && pod install
-  - xcode-project use-profiles
-  - |
-    cd ios/App
-    xcode-project build-ipa --workspace App.xcworkspace --scheme App
+      - npm ci
+      - npm install @capacitor/cli @capacitor/core @capacitor/ios --save-dev
+      - npx cap sync ios
+      - cd ios/App && pod install
+      - xcode-project use-profiles
+      - |
+        cd ios/App
+        xcode-project build-ipa --workspace App.xcworkspace --scheme App
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
     publishing:
