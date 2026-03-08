@@ -9,14 +9,14 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.griff.gigconnect  # match your capacitor.config.json
     scripts:
-      - npm install
-      - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
-      - npx cap sync ios
-      - cd ios/App && pod install
-      - xcode-project use-profiles
-      - |
-        cd ios/App
-        xcode-project build-ipa --workspace App.xcworkspace --scheme App
+  - npm ci
+  - npm install @capacitor/cli @capacitor/core @capacitor/ios --save-dev
+  - npx cap sync ios
+  - cd ios/App && pod install
+  - xcode-project use-profiles
+  - |
+    cd ios/App
+    xcode-project build-ipa --workspace App.xcworkspace --scheme App
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
     publishing:
