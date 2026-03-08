@@ -10,15 +10,36 @@ workflows:
         bundle_identifier: com.griff.gigconnect
     scripts:
       - npm ci
-      - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
-      - ls -la www
+      - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
+      - ls -la www  # check if web assets are there
+      - |
+        cd ios || mkdir ios && cd ios
+        if ; then
+          echo "Creating Podfile manually..."
+          cat << EOF > Podfile
+platform :ios, '13.0'
+use_frameworks!
+
+target 'App' do
+  capacitor_pods
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings = '13.0'
+    end
+  end
+end
+EOF
+        fi
       - npx cap add ios
       - npx cap sync ios
       - ls -la ios/App
       - cd ios/App && pod install
+      - cd ../../  # back to root
       - xcode-project use-profiles
-      - |
-        cd ios/App
-        xcode-project build-ipa --workspace App.xcworkspace --scheme App
+      - cd ios/App
+      - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
