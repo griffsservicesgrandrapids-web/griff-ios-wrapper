@@ -10,18 +10,20 @@ workflows:
         bundle_identifier: com.griff.gigconnect
     scripts:
       - npm ci
-      - npm run build   # <--- this builds your web app (assumes Vite/React/Angular—adjust if different)
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
-      - ls -la www      # debug: confirm files exist
-      - rm -rf ios || true
+      - npm run build  # <--- builds your web app (creates files in www/ or dist/)
+      - ls -la www     # debug: confirm build output exists
+      - rm -rf ios || true  # wipe old ios folder
       - npx cap add ios
       - npx cap sync ios
-      - ls -la ios/App  # should now list Podfile + assets
+      - ls -la ios/App  # debug: should show Podfile now
       - cd ios/App && pod install
       - cd ../../
       - xcode-project use-profiles
       - cd ios/App
       - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
     artifacts:
