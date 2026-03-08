@@ -12,10 +12,10 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - ls -la www
-      - rm -rf ios || true  # safe wipe, ignore if missing
+      - rm -rf ios || true
       - npx cap add ios
       - npx cap sync ios
-      - ls -la ios/App
+      - ls -la ios/App  # debug: should show Podfile now
       - cd ios/App && pod install
       - cd ../../
       - xcode-project use-profiles
