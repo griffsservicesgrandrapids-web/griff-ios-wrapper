@@ -12,8 +12,8 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
       - ls -la www
-      - npx cap add ios --verbose
-      - npx cap sync ios --verbose
+      - npx cap add ios
+      - npx cap sync ios
       - ls -la ios/App
       - cd ios/App && pod install
       - xcode-project use-profiles
