@@ -12,27 +12,8 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - ls -la www
-      - |
-        cd ios || { mkdir ios && cd ios; }
-        if ; then
-          echo "Creating Podfile..."
-          cat << 'EOF' > Podfile
-platform :ios, 13.0
-use_frameworks!
-
-target 'App' do
-  capacitor_pods
-end
-
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings = 13.0
-    end
-  end
-end
-EOF
-        fi
+      - cd ios || mkdir ios && cd ios
+      - if ; then echo "Creating Podfile..."; echo "platform :ios, 13.0" > Podfile; echo "use_frameworks!" >> Podfile; echo "" >> Podfile; echo "target 'App' do" >> Podfile; echo "  capacitor_pods" >> Podfile; echo "end" >> Podfile; echo "" >> Podfile; echo "post_install do |installer|" >> Podfile; echo "  installer.pods_project.targets.each do |target|" >> Podfile; echo "    target.build_configurations.each do |config|" >> Podfile; echo "      config.build_settings = 13.0" >> Podfile; echo "    end" >> Podfile; echo "  end" >> Podfile; echo "end" >> Podfile; fi
       - npx cap add ios
       - npx cap sync ios
       - ls -la ios/App
