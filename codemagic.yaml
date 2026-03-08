@@ -11,6 +11,7 @@ workflows:
     scripts:
       - npm ci
       - npm install @capacitor/cli @capacitor/core @capacitor/ios --save-dev
+      - npx cap add ios
       - npx cap sync ios
       - cd ios/App && pod install
       - xcode-project use-profiles
