@@ -3,7 +3,7 @@ workflows:
     name: Gig Connect iOS Build
     max_build_duration: 60
     integrations:
-      app_store_connect: API Key  # Change if you named it different
+      app_store_connect: APIKey  # 885V2934YV
     environment:
       ios_signing:
         distribution_type: app_store
