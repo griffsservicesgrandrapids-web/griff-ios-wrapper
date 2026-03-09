@@ -12,6 +12,7 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - npm run build  # <--- builds your web app (creates files in www/ or dist/)
+      - mkdir -p www && cp -r dist/* www/ || true  # force copy build output to www/
       - ls -la www     # debug: confirm build output exists
       - rm -rf ios || true  # wipe old ios folder
       - npx cap add ios
