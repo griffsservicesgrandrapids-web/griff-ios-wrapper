@@ -25,7 +25,7 @@ workflows:
           echo "platform :ios, 13.0" > Podfile
           echo "use_frameworks!" >> Podfile
           echo "" >> Podfile
-          echo "project 'App.xcodeproj'" >> Podfile
+          echo "project 'App.xcodeproj'" >> Podfile   # This line fixes the "Unable to find Xcode project" error
           echo "" >> Podfile
           echo "target 'App' do" >> Podfile
           echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
