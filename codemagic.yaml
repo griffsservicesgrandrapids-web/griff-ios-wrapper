@@ -17,8 +17,10 @@ workflows:
       - rm -rf ios || true  # wipe old ios folder
       - npx cap add ios
       - npx cap sync ios
-      - ls -la ios/App  # debug: should show Podfile now
-      - cd ios/App && pod install
+      - ls -la ios/App  # debug
+      - cd ios/App
+      - pod init || true  # create Podfile if missing
+      - pod install
       - cd ../../
       - xcode-project use-profiles
       - cd ios/App
