@@ -21,9 +21,11 @@ workflows:
       - cd ios/App
       - |
         if [ ! -f Podfile ]; then
-          echo "Manual Podfile creation"
+          echo "Manual Podfile creation with project path"
           echo "platform :ios, 13.0" > Podfile
           echo "use_frameworks!" >> Podfile
+          echo "" >> Podfile
+          echo "project 'App.xcodeproj'" >> Podfile
           echo "" >> Podfile
           echo "target 'App' do" >> Podfile
           echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
