@@ -17,16 +17,15 @@ workflows:
       - rm -rf ios || true
       - npx cap add ios
       - npx cap sync ios
-      - ls -la ios/App
+      - ls -la ios/App  # debug: should show App.xcodeproj
       - cd ios/App
       - |
         if [ ! -f Podfile ]; then
-          echo "Manual Podfile creation with explicit project path"
+          echo "Manual Podfile creation with absolute path"
           echo "platform :ios, 13.0" > Podfile
           echo "use_frameworks!" >> Podfile
           echo "" >> Podfile
-          echo "project 'App.xcodeproj'" >> Podfile   # keep this, but add the next line as backup
-          echo "workspace 'App.xcworkspace'" >> Podfile  # add this for workspace reference
+          echo "project './App.xcodeproj'" >> Podfile  # explicit current dir
           echo "" >> Podfile
           echo "target 'App' do" >> Podfile
           echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
@@ -41,6 +40,7 @@ workflows:
           echo "  end" >> Podfile
           echo "end" >> Podfile
         fi
+      - ls -la  # debug: confirm Podfile and App.xcodeproj are here
       - pod repo update || true
       - pod install --repo-update
       - cd ../../
