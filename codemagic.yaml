@@ -1,14 +1,4 @@
-workflows:
-  ios-release:
-    name: Gig Connect iOS Build
-    max_build_duration: 60
-    integrations:
-      app_store_connect: APIKey
-    environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.griff.gigconnect
-    scripts:
+scripts:
   - npm ci
   - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
   - npm run build
@@ -47,5 +37,3 @@ workflows:
   - xcode-project use-profiles
   - cd ios/App
   - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
-    artifacts:
-      - ios/App/build/ios/ipa/*.ipa
