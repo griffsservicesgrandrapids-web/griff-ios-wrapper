@@ -19,13 +19,14 @@ workflows:
       - npx cap sync ios
       - ls -la ios/App  # debug: check for App.xcodeproj
       - cd ios/App
+      - ls -la  # debug: confirm App.xcodeproj is here
       - |
         if [ ! -f Podfile ]; then
           echo "Manual Podfile creation with CORRECT relative path"
           echo "platform :ios, 13.0" > Podfile
           echo "use_frameworks!" >> Podfile
           echo "" >> Podfile
-          echo "project './App.xcodeproj'" >> Podfile  # relative from ios/App
+          echo "project './App.xcodeproj'" >> Podfile  # ./ = current dir (ios/App)
           echo "" >> Podfile
           echo "target 'App' do" >> Podfile
           echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
@@ -40,7 +41,6 @@ workflows:
           echo "  end" >> Podfile
           echo "end" >> Podfile
         fi
-      - ls -la  # debug: confirm Podfile and App.xcodeproj here
       - pod repo update || true
       - pod install --repo-update
       - cd ../../
