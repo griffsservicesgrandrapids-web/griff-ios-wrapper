@@ -16,15 +16,15 @@ workflows:
       - ls -la www
       - rm -rf ios || true
       - npx cap add ios
-      - npx cap sync ios
-      - ls -la ios || echo "No ios folder!"
-      - ls -la ios/App || echo "No App folder!"
-      - ls -la ios/App/App.xcodeproj || echo "No App.xcodeproj!"
+      - ls -la ios || echo "No ios folder after add!"
+      - ls -la ios/App || echo "No App after add!"
       - cd ios/App
       - ls -la
       - pod repo update || true
-      - pod install --repo-update --project-directory=. --verbose || echo "Pod install failed"
+      - pod install --repo-update --project-directory=. || echo "Pod install failed"
       - cd ../../
+      - npx cap sync ios  # <-- moved here, after pods!
+      - ls -la ios/App/App.xcworkspace || echo "Workspace missing after sync!"
       - xcode-project use-profiles
       - cd ios/App
       - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
