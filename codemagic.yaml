@@ -20,7 +20,7 @@ workflows:
       - ls -la ios/App
       - cd ios/App
       - |
-        if [ ! -f Podfile ]; then
+        if ; then
           echo "Manual Podfile creation with project path"
           echo "platform :ios, 13.0" > Podfile
           echo "use_frameworks!" >> Podfile
@@ -35,7 +35,7 @@ workflows:
           echo "post_install do |installer|" >> Podfile
           echo "  installer.pods_project.targets.each do |target|" >> Podfile
           echo "    target.build_configurations.each do |config|" >> Podfile
-          echo "      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'" >> Podfile
+          echo "      config.build_settings = '13.0'" >> Podfile
           echo "    end" >> Podfile
           echo "  end" >> Podfile
           echo "end" >> Podfile
