@@ -36,4 +36,4 @@ scripts:
   - cd ../../
   - xcode-project use-profiles
   - cd ios/App
-  - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive  
+  - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive   
