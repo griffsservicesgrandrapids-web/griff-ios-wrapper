@@ -2,7 +2,7 @@ scripts:
   - npm ci
   - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
   - npm run build
-  - mkdir -p www && cp -r dist/* www/ || true
+  - mkdir -p www && cp -r dist/* www/ || true  
   - ls -la www
   - rm -rf ios || true
   - npx cap add ios
