@@ -17,31 +17,13 @@ workflows:
       - rm -rf ios || true
       - npx cap add ios
       - npx cap sync ios
-      - ls -la ios/App
+      - ls -la ios || echo "No ios folder!"
+      - ls -la ios/App || echo "No App folder!"
+      - ls -la ios/App/App.xcodeproj || echo "No App.xcodeproj!"
       - cd ios/App
-      - ls -la  # show what's in ios/App
-      - ls -la App.xcodeproj || echo "No App.xcodeproj found!"
-      - |
-        echo "Creating Podfile"
-        echo "platform :ios, 13.0" > Podfile
-        echo "use_frameworks!" >> Podfile
-        echo "" >> Podfile
-        echo "project 'App.xcodeproj'" >> Podfile
-        echo "" >> Podfile
-        echo "target 'App' do" >> Podfile
-        echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
-        echo "  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios/CapacitorCordova'" >> Podfile
-        echo "end" >> Podfile
-        echo "" >> Podfile
-        echo "post_install do |installer|" >> Podfile
-        echo "  installer.pods_project.targets.each do |target|" >> Podfile
-        echo "    target.build_configurations.each do |config|" >> Podfile
-        echo "      config.build_settings = '13.0'" >> Podfile
-        echo "    end" >> Podfile
-        echo "  end" >> Podfile
-        echo "end" >> Podfile
+      - ls -la
       - pod repo update || true
-      - pod install --repo-update
+      - pod install --repo-update --project-directory=. --verbose || echo "Pod install failed"
       - cd ../../
       - xcode-project use-profiles
       - cd ios/App
