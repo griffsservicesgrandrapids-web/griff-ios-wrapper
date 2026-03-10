@@ -12,13 +12,14 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - npm run build
-      - ls -la dist || echo "dist empty after build!"
+      - ls -la dist || echo "dist MISSING or EMPTY!"
       - mkdir -p www && cp -r dist/* www/ || true
-      - ls -la www || echo "www empty after copy!"
+      - ls -la www || echo "www MISSING or EMPTY!"
       - rm -rf ios || true
-      - npx cap add ios
+      - npx cap add ios || echo "cap add ios FAILED!"
+      - ls -la ios/App || echo "ios/App missing after add!"
       - cd ios/App
-      - ls -la  # after add: App.xcodeproj?
+      - ls -la || echo "ios/App contents after add"
       - |
         echo "Creating Podfile"
         echo "platform :ios, 13.0" > Podfile
@@ -41,9 +42,12 @@ workflows:
       - pod repo update || true
       - pod install --repo-update || echo "Pod install failed"
       - cd ../../
-      - npx cap sync ios || echo "Sync failed!"
-      - ls -la ios/App || echo "ios/App after sync?"
+      - npx cap sync ios || echo "cap sync ios FAILED!"
       - ls -la ios/App/App.xcworkspace || echo "No workspace after sync!"
-      - xcode-project use-profiles
+      - ls -la ios/App || echo "ios/App after sync?"
+      - xcode-project use-profiles || echo "use-profiles failed"
       - cd ios/App
-      - xcodebuild -workspace App.xcworkspace -scheme
+      - ls -la || echo "Final ios/App before xcodebuild"
+      - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
