@@ -12,18 +12,36 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - npm run build
+      - ls -la dist || echo "dist empty after build!"
       - mkdir -p www && cp -r dist/* www/ || true
-      - ls -la www
+      - ls -la www || echo "www empty after copy!"
       - rm -rf ios || true
       - npx cap add ios
-      - ls -la ios || echo "No ios folder after add!"
-      - ls -la ios/App || echo "No App after add!"
       - cd ios/App
-      - ls -la
+      - ls -la  # should show App.xcodeproj after add
+      - |
+        echo "Creating Podfile"
+        echo "platform :ios, 13.0" > Podfile
+        echo "use_frameworks!" >> Podfile
+        echo "" >> Podfile
+        echo "project 'App.xcodeproj'" >> Podfile
+        echo "" >> Podfile
+        echo "target 'App' do" >> Podfile
+        echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
+        echo "  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios/CapacitorCordova'" >> Podfile
+        echo "end" >> Podfile
+        echo "" >> Podfile
+        echo "post_install do |installer|" >> Podfile
+        echo "  installer.pods_project.targets.each do |target|" >> Podfile
+        echo "    target.build_configurations.each do |config|" >> Podfile
+        echo "      config.build_settings = '13.0'" >> Podfile
+        echo "    end" >> Podfile
+        echo "  end" >> Podfile
+        echo "end" >> Podfile
       - pod repo update || true
-      - pod install --repo-update --project-directory=. || echo "Pod install failed"
+      - pod install --repo-update || echo "Pod install failed"
       - cd ../../
-      - npx cap sync ios  # <-- moved here, after pods!
+      - npx cap sync ios || echo "Sync failed!"
       - ls -la ios/App/App.xcworkspace || echo "Workspace missing after sync!"
       - xcode-project use-profiles
       - cd ios/App
