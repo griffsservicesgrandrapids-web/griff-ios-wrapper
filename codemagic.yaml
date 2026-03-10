@@ -20,26 +20,24 @@ workflows:
       - ls -la ios/App
       - cd ios/App
       - |
-        if ; then
-          echo "Manual Podfile creation with project path"
-          echo "platform :ios, 13.0" > Podfile
-          echo "use_frameworks!" >> Podfile
-          echo "" >> Podfile
-          echo "project 'App.xcodeproj'" >> Podfile
-          echo "" >> Podfile
-          echo "target 'App' do" >> Podfile
-          echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
-          echo "  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios/CapacitorCordova'" >> Podfile
-          echo "end" >> Podfile
-          echo "" >> Podfile
-          echo "post_install do |installer|" >> Podfile
-          echo "  installer.pods_project.targets.each do |target|" >> Podfile
-          echo "    target.build_configurations.each do |config|" >> Podfile
-          echo "      config.build_settings = '13.0'" >> Podfile
-          echo "    end" >> Podfile
-          echo "  end" >> Podfile
-          echo "end" >> Podfile
-        fi
+        echo "Creating Podfile"
+        echo "platform :ios, 13.0" > Podfile
+        echo "use_frameworks!" >> Podfile
+        echo "" >> Podfile
+        echo "project 'App.xcodeproj'" >> Podfile
+        echo "" >> Podfile
+        echo "target 'App' do" >> Podfile
+        echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
+        echo "  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios/CapacitorCordova'" >> Podfile
+        echo "end" >> Podfile
+        echo "" >> Podfile
+        echo "post_install do |installer|" >> Podfile
+        echo "  installer.pods_project.targets.each do |target|" >> Podfile
+        echo "    target.build_configurations.each do |config|" >> Podfile
+        echo "      config.build_settings = '13.0'" >> Podfile
+        echo "    end" >> Podfile
+        echo "  end" >> Podfile
+        echo "end" >> Podfile
       - pod repo update || true
       - pod install --repo-update
       - cd ../../
