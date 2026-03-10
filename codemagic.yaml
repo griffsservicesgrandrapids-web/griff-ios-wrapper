@@ -12,42 +12,23 @@ workflows:
       - npm ci
       - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
       - npm run build
-      - ls -la dist || echo "dist MISSING or EMPTY!"
+      - ls -la dist || echo "DIST EMPTY AFTER BUILD"
       - mkdir -p www && cp -r dist/* www/ || true
-      - ls -la www || echo "www MISSING or EMPTY!"
+      - ls -la www || echo "WWW EMPTY AFTER COPY"
       - rm -rf ios || true
-      - npx cap add ios || echo "cap add ios FAILED!"
-      - ls -la ios/App || echo "ios/App missing after add!"
+      - npx cap add ios
+      - ls -la ios/App || echo "NO IOS/APP AFTER ADD"
       - cd ios/App
-      - ls -la || echo "ios/App contents after add"
-      - |
-        echo "Creating Podfile"
-        echo "platform :ios, 13.0" > Podfile
-        echo "use_frameworks!" >> Podfile
-        echo "" >> Podfile
-        echo "project 'App.xcodeproj'" >> Podfile
-        echo "" >> Podfile
-        echo "target 'App' do" >> Podfile
-        echo "  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'" >> Podfile
-        echo "  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios/CapacitorCordova'" >> Podfile
-        echo "end" >> Podfile
-        echo "" >> Podfile
-        echo "post_install do |installer|" >> Podfile
-        echo "  installer.pods_project.targets.each do |target|" >> Podfile
-        echo "    target.build_configurations.each do |config|" >> Podfile
-        echo "      config.build_settings = '13.0'" >> Podfile
-        echo "    end" >> Podfile
-        echo "  end" >> Podfile
-        echo "end" >> Podfile
+      - ls -la || echo "IOS/APP CONTENTS AFTER ADD"
       - pod repo update || true
-      - pod install --repo-update || echo "Pod install failed"
+      - pod install --repo-update || echo "POD INSTALL FAILED"
       - cd ../../
-      - npx cap sync ios || echo "cap sync ios FAILED!"
-      - ls -la ios/App/App.xcworkspace || echo "No workspace after sync!"
-      - ls -la ios/App || echo "ios/App after sync?"
-      - xcode-project use-profiles || echo "use-profiles failed"
+      - npx cap sync ios --verbose || echo "SYNC FAILED - VERBOSE OUTPUT ABOVE"
+      - ls -la ios/App/App.xcworkspace || echo "NO WORKSPACE AFTER SYNC"
+      - ls -la ios/App || echo "IOS/APP AFTER SYNC"
+      - xcode-project use-profiles || echo "USE-PROFILES FAILED"
       - cd ios/App
-      - ls -la || echo "Final ios/App before xcodebuild"
+      - ls -la || echo "FINAL IOS/APP BEFORE ARCHIVE"
       - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
