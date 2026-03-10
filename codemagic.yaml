@@ -18,7 +18,7 @@ workflows:
       - rm -rf ios || true
       - npx cap add ios
       - cd ios/App
-      - ls -la  # should show App.xcodeproj after add
+      - ls -la  # after add: App.xcodeproj?
       - |
         echo "Creating Podfile"
         echo "platform :ios, 13.0" > Podfile
@@ -42,9 +42,8 @@ workflows:
       - pod install --repo-update || echo "Pod install failed"
       - cd ../../
       - npx cap sync ios || echo "Sync failed!"
-      - ls -la ios/App/App.xcworkspace || echo "Workspace missing after sync!"
+      - ls -la ios/App || echo "ios/App after sync?"
+      - ls -la ios/App/App.xcworkspace || echo "No workspace after sync!"
       - xcode-project use-profiles
       - cd ios/App
-      - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
-    artifacts:
-      - ios/App/build/ios/ipa/*.ipa
+      - xcodebuild -workspace App.xcworkspace -scheme
