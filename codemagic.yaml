@@ -19,6 +19,8 @@ workflows:
       - npx cap sync ios
       - ls -la ios/App
       - cd ios/App
+      - ls -la  # show what's in ios/App
+      - ls -la App.xcodeproj || echo "No App.xcodeproj found!"
       - |
         echo "Creating Podfile"
         echo "platform :ios, 13.0" > Podfile
