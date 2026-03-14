@@ -1,24 +1,24 @@
 workflows:
-  ios-build:                          # Workflow name
+  ios-build:
     name: Build iOS
     instance_type: mac_mini_m1
     max_build_duration: 60
     integrations:
-      app_store_connect: APIKey       # if you have App Store Connect integration set up
+      app_store_connect: APIKey
     scripts:
       - name: Install dependencies
         script: |
           npm ci
       - name: Build web assets
         script: |
-          npm run build                 # creates the dist/ folder
-     - name: Install Capacitor CLI and sync iOS
+          npm run build
+      - name: Install Capacitor CLI and sync iOS
         script: |
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
           rm -rf ios/ || true
           npx cap add ios
-          npx cap sync ios   # <-- no --no-open
-      - name: Build iOS app
+          npx cap sync ios
+      - name: Build app
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
@@ -32,4 +32,4 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        submit_to_testflight: true      # optional: auto-submit to TestFlight
+        submit_to_testflight: true
