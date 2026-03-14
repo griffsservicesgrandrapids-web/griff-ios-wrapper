@@ -1,7 +1,6 @@
 {
-	"appId": "com.griff.gigconnect",
-	"appName": "Gig Connect",
-	"webDir": "www",
-	"bundledWebRuntime": false,
+	"appId": "com.griffservices.griffsservices",
+	"appName": "Griff's Services",
+	"webDir": "dist",
 	"packageClassList": []
 }
