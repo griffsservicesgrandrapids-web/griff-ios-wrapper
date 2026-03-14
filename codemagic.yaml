@@ -2,29 +2,62 @@ workflows:
   ios-release:
     name: Gig Connect iOS Build
     max_build_duration: 60
+
     integrations:
       app_store_connect: APIKey
+
     environment:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.griff.gigconnect
+
     scripts:
+
+      # Install dependencies
       - npm ci
-      - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
+      - npm install @capacitor/cli @capacitor/core @capacitor/ios
+
+      # Build web project
       - npm run build
-      - ls -la dist || echo "DIST EMPTY AFTER BUILD"
-      - mkdir -p www && cp -r dist/* www/ || true
-      - ls -la www || echo "WWW EMPTY AFTER COPY"
-      - rm -rf ios || true
+
+      # Prepare Capacitor web directory
+      - mkdir -p www
+      - cp -r dist/* www/ || true
+
+      # Remove any old iOS project
+      - rm -rf ios
+
+      # Add fresh iOS platform
       - npx cap add ios
-      - npx cap sync ios --verbose || echo "SYNC FAILED"
+
+      # Sync web assets + plugins
+      - npx cap sync ios
+
+      # Verify project exists
+      - ls -la ios
+      - ls -la ios/App
+
+      # Install CocoaPods dependencies
       - cd ios/App
-      - pod install --repo-update
-      - ls -la
+      - pod install
       - cd ../../
-      - ls -la ios/App/App.xcworkspace || (echo "WORKSPACE NOT FOUND"; exit 1)
+
+      # Verify workspace was created
+      - ls -la ios/App/App.xcworkspace || (echo "Workspace not generated"; exit 1)
+
+      # Apply signing
       - xcode-project use-profiles
+
+      # Build archive
       - cd ios/App
-      - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
+      - xcodebuild \
+        -workspace App.xcworkspace \
+        -scheme App \
+        -configuration Release \
+        -sdk iphoneos \
+        -derivedDataPath build \
+        -archivePath build/App.xcarchive \
+        archive
+
     artifacts:
-      - ios/App/build/ios/ipa/*.ipa
+      - ios/App/build/**/*.ipa
