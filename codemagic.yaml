@@ -1,57 +1,34 @@
 workflows:
-ios-release:
-name: Gig Connect iOS Build
-max_build_duration: 60
-integrations:
-app_store_connect: APIKey
-
-environment:
-  ios_signing:
-    distribution_type: app_store
-    bundle_identifier: com.griff.gigconnect
-
-scripts:
-  - npm ci
-  - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
-
-  # Build the web app
-  - npm run build
-  - ls -la dist || echo "DIST EMPTY AFTER BUILD"
-
-  # Copy build to Capacitor web folder
-  - mkdir -p www
-  - cp -r dist/* www/ || true
-  - ls -la www || echo "WWW EMPTY AFTER COPY"
-
-  # Recreate iOS platform
-  - rm -rf ios || true
-  - npx cap add ios
-
-  # Sync project
-  - npx cap sync ios
-
-  # Install CocoaPods
-  - cd ios/App
-  - pod install --repo-update
-  - ls -la
-  - cd ../../
-
-  # Verify workspace exists
-  - ls -la ios/App/App.xcworkspace || echo "WORKSPACE STILL MISSING"
-
-  # Apply signing profiles
-  - xcode-project use-profiles
-
-  # Build archive
-  - cd ios/App
-  - xcodebuild \
-    -workspace App.xcworkspace \
-    -scheme App \
-    -configuration Release \
-    -sdk iphoneos \
-    -derivedDataPath build \
-    -archivePath build/App.xcarchive \
-    archive
-
-artifacts:
-  - ios/App/build/App.xcarchive
+  ios-release:
+    name: Gig Connect iOS Build
+    max_build_duration: 60
+    integrations:
+      app_store_connect: APIKey
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.griff.gigconnect
+    scripts:
+      - npm ci
+      - npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
+      - npm run build
+      - ls -la dist || echo "DIST EMPTY AFTER BUILD"
+      - mkdir -p www && cp -r dist/* www/ || true
+      - ls -la www || echo "WWW EMPTY AFTER COPY"
+      - rm -rf ios || true
+      - npx cap add ios
+      - ls -la ios/App || echo "NO IOS/APP AFTER ADD"
+      - cd ios/App
+      - ls -la || echo "IOS/APP CONTENTS AFTER ADD"
+      - pod repo update || true
+      - pod install --repo-update || echo "POD INSTALL FAILED"
+      - cd ../../
+      - npx cap sync ios --verbose || echo "SYNC FAILED - VERBOSE OUTPUT ABOVE"
+      - ls -la ios/App/App.xcworkspace || (echo "WORKSPACE NOT FOUND!"; exit 1)
+      - ls -la ios/App || echo "IOS/APP AFTER SYNC"
+      - xcode-project use-profiles || echo "USE-PROFILES FAILED"
+      - cd ios/App
+      - ls -la || echo "FINAL IOS/APP BEFORE ARCHIVE"
+      - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
+    artifacts:
+      - ios/App/build/ios/ipa/*.ipa
