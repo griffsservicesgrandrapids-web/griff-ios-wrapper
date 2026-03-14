@@ -13,7 +13,7 @@ workflows:
         script: |
           npm install @capacitor/cli@latest --save-dev
           rm -rf ios/ || true
-          npx cap add ios --app-name "GigConnect" --app-id com.griffservices.gigconnect
+          npx cap add ios
           npx cap sync ios
           ls ios/Podfile || (echo "Podfile still missing!"; exit 1)
       - name: Install pods
