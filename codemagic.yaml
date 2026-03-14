@@ -29,9 +29,27 @@ workflows:
           xcodebuild -project ios/App/App.xcodeproj -resolvePackageDependencies || echo "Project resolve failed!"
           ls -la ios/App/App.xcworkspace || echo "Workspace still missing!"
           ls -la ios/App/App.xcodeproj || echo "Even the project file is missing!"
+      - name: Full iOS reset and sync
+        script: |
+          rm -rf ios/ node_modules/@capacitor/ios || true
+          npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
+          npx cap add ios
+          npx cap sync ios --no-open
+          npx cap sync ios --no-open
+          cd ios/App
+          pod deintegrate || true
+          pod repo update || true
+          pod install --repo-update
+          cd ../..
+          # Force Xcode to resolve SPM and generate workspace
+          xcodebuild -project ios/App/App.xcodeproj -resolvePackageDependencies || echo "Project SPM resolve failed!"
+          xcodebuild -resolvePackageDependencies || echo "Global resolve failed!"
+          # Final check
+          ls -la ios/App/App.xcworkspace || echo "Workspace STILL MISSING after all!"
+          ls -la ios/App/App.xcodeproj || echo "Even project file missing!"
       - name: Build iOS app
         script: |
-          # Try workspace first
+          # Prefer workspace
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
@@ -39,7 +57,8 @@ workflows:
             -derivedDataPath ios/build \
             -archivePath ios/build/Archive.xcarchive \
             archive || \
-          # Fallback to project if workspace absent
+          # Fallback to project (if workspace failed to generate)
+          echo "Workspace missing, falling back to .xcodeproj"
           xcodebuild -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
