@@ -19,14 +19,17 @@ workflows:
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
           npx cap add ios
           npx cap sync ios --no-open
-          npx cap sync ios --no-open  # run twice for CI reliability
+          npx cap sync ios --no-open  # double for luck
           cd ios/App
           pod deintegrate || true
           pod repo update || true
           pod install --repo-update
           cd ../..
-          ls -la ios/App/App.xcworkspace || echo "ERROR: App.xcworkspace MISSING after sync!"
-          ls -la ios/App/Pods || echo "Pods folder missing!"
+          # Force SPM workspace creation
+          cd ios/App
+          xcodebuild -resolvePackageDependencies -workspace App.xcworkspace || echo "SPM resolve failed!"
+          cd ../..
+          ls -la ios/App/App.xcworkspace || echo "Workspace still missing!"
       - name: Build iOS app
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
