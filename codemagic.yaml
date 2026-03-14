@@ -9,8 +9,9 @@ workflows:
       - name: Install dependencies
         script: |
           npm ci
-      - name: Sync Capacitor platforms
+      - name: Install Capacitor CLI and sync
         script: |
+          npm install @capacitor/cli@latest --save-dev
           npx cap sync ios
       - name: Check Podfile exists
         script: |
