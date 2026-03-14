@@ -20,6 +20,9 @@ workflows:
           npx cap sync ios
       - name: Build app
         script: |
+          cd ios/App
+          xcodebuild -resolvePackageDependencies
+          cd ../..
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
