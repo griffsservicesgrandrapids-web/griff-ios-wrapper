@@ -1,71 +1,34 @@
 workflows:
-  ios-release:
-    name: Gig Connect iOS Build
+  ios-build:
+    name: Build iOS
+    instance_type: mac_mini_m1
     max_build_duration: 60
-
-    integrations:
-      app_store_connect: APIKey
-
-
-    integrations:
-      app_store_connect: APIKey
-
-
-    environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.griff.gigconnect
-
     scripts:
-
-      # install dependencies
-      - npm ci
-      - npm install @capacitor/cli @capacitor/core @capacitor/ios
-
-      # build web assets
-      - npm run build
-
-      # move web build to capacitor folder
-      - mkdir -p www
-      - cp -r dist/* www/ || true
-
-      # reset ios platform
-      - rm -rf ios
-
-      # add ios platform
-      - npx cap add ios
-
-      # sync plugins + web assets
-      - npx cap sync ios
-
-      # verify ios project structure
-      - ls -la ios
-      - ls -la ios/App
-
-      # ensure Podfile exists before continuing
-      - ls ios/App/Podfile || (echo "Podfile missing"; exit 1)
-
-      # install pods
-      - cd ios/App
-      - pod install
-      - cd ../../
-
-      # ensure workspace exists
-      - ls ios/App/App.xcworkspace || (echo "Workspace missing"; exit 1)
-
-      # apply signing profiles
-      - xcode-project use-profiles
-
-      # build archive
-      - cd ios/App
-      - xcodebuild \
-        -workspace App.xcworkspace \
-        -scheme App \
-        -configuration Release \
-        -sdk iphoneos \
-        -derivedDataPath build \
-        -archivePath build/App.xcarchive \
-        archive
-
+      - name: Install dependencies
+        script: |
+          npm ci
+      - name: Sync Capacitor platforms
+        script: |
+          npx cap sync ios
+      - name: Check Podfile exists
+        script: |
+          ls ios/Podfile || (echo "Podfile missing after sync"; exit 1)
+      - name: Install pods
+        script: |
+          cd ios/App
+          pod install
+      - name: Build app
+        script: |
+          xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            -archivePath build/Archive.xcarchive \
+            archive
     artifacts:
-      - ios/App/build/**/*.ipa
+      - build/Archive.xcarchive/**
+    publishing:
+      app_store_connect:
+        auth: api_key
+        submit_to_testflight: true
