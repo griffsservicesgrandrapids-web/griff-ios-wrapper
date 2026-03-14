@@ -15,17 +15,28 @@ workflows:
           rm -rf ios/ || true
           npx cap add ios
           npx cap sync ios
-      - name: Build app (SPM handles dependencies)
+      - name: Debug iOS project files
+        script: |
+          ls -la ios/App/
+          ls ios/App/*.xcodeproj || echo "No .xcodeproj!"
+          ls ios/App/*.xcworkspace || echo "No workspace yet!"
+      - name: Build app
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
-            -derivedDataPath ios/App/build \
-            -archivePath ios/App/build/Archive.xcarchive \
-            archive
+            -derivedDataPath ios/build \
+            -archivePath ios/build/Archive.xcarchive \
+            archive || xcodebuild -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ios/build \
+            -archivePath ios/build/Archive.xcarchive \
+            archive   # fallback to project if no workspace
     artifacts:
-      - ios/App/build/Archive.xcarchive/**
+      - ios/build/Archive.xcarchive/**
     publishing:
       app_store_connect:
         auth: integration
