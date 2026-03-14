@@ -15,9 +15,6 @@ workflows:
           rm -rf ios/ || true
           npx cap add ios
           npx cap sync ios
-      - name: Check SPM Package.swift exists
-        script: |
-          ls ios/App/Package.swift || (echo "Package.swift missing after add/sync"; exit 1)
       - name: Build app (SPM handles dependencies)
         script: |
           cd ios/App
