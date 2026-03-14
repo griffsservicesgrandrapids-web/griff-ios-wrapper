@@ -12,12 +12,12 @@ workflows:
       - name: Build web assets
         script: |
           npm run build                 # creates the dist/ folder
-      - name: Install Capacitor CLI and sync iOS
+     - name: Install Capacitor CLI and sync iOS
         script: |
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
-          rm -rf ios/ || true           # clean any broken ios/ folder
+          rm -rf ios/ || true
           npx cap add ios
-          npx cap sync ios --no-open    # sync assets without opening Xcode
+          npx cap sync ios   # <-- no --no-open
       - name: Build iOS app
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
