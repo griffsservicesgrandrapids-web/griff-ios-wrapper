@@ -15,14 +15,13 @@ workflows:
           rm -rf ios/ || true
           npx cap add ios
           npx cap sync ios
-          ls ios/Podfile || (echo "Podfile still missing!"; exit 1)
-      - name: Install pods
+      - name: Check SPM Package.swift exists
+        script: |
+          ls ios/App/Package.swift || (echo "Package.swift missing after add/sync"; exit 1)
+      - name: Build app (SPM handles dependencies)
         script: |
           cd ios/App
-          pod install
-      - name: Build app
-        script: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
+          xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
