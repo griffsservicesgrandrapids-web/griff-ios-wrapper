@@ -9,17 +9,15 @@ workflows:
       - name: Install dependencies
         script: |
           npm ci
+      - name: Build web assets
+        script: |
+          npm run build   # <-- this creates /dist!
       - name: Install Capacitor CLI, reset iOS, and add fresh
         script: |
           npm install @capacitor/cli@latest --save-dev
           rm -rf ios/ || true
           npx cap add ios
           npx cap sync ios
-      - name: Debug iOS project files
-        script: |
-          ls -la ios/App/
-          ls ios/App/*.xcodeproj || echo "No .xcodeproj!"
-          ls ios/App/*.xcworkspace || echo "No workspace yet!"
       - name: Build app
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
@@ -28,13 +26,7 @@ workflows:
             -sdk iphoneos \
             -derivedDataPath ios/build \
             -archivePath ios/build/Archive.xcarchive \
-            archive || xcodebuild -project ios/App/App.xcodeproj \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath ios/build \
-            -archivePath ios/build/Archive.xcarchive \
-            archive   # fallback to project if no workspace
+            archive
     artifacts:
       - ios/build/Archive.xcarchive/**
     publishing:
