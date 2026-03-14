@@ -6,27 +6,28 @@ workflows:
     integrations:
       app_store_connect: APIKey
     scripts:
-      - name: Install dependencies
-        script: |
-          npm ci
-      - name: Build web assets
-        script: |
-          npm run build   # <-- this creates /dist!
-      - name: Install Capacitor CLI, reset iOS, and add fresh
-        script: |
-          npm install @capacitor/cli@latest --save-dev
-          rm -rf ios/ || true
-          npx cap add ios
-          npx cap sync ios
-      - name: Build app
-        script: |
-          xcodebuild -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath ios/build \
-            -archivePath ios/build/Archive.xcarchive \
-            archive
+  - name: Install dependencies
+    script: |
+      npm ci
+  - name: Build web assets (this creates dist/)
+    script: |
+      npm run build   # <-- MUST come before sync!
+  - name: Install Capacitor CLI and sync iOS
+    script: |
+      npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
+      rm -rf ios/ || true   # clean old ios/ if corrupted
+      npx cap add ios
+      npx cap sync ios --no-open
+      npx cap sync   # run twice if needed for SPM
+  - name: Build iOS app
+    script: |
+      xcodebuild -workspace ios/App/App.xcworkspace \
+        -scheme App \
+        -configuration Release \
+        -sdk iphoneos \
+        -derivedDataPath ios/build \
+        -archivePath ios/build/Archive.xcarchive \
+        archive
     artifacts:
       - ios/build/Archive.xcarchive/**
     publishing:
