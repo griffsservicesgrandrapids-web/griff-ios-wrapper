@@ -9,14 +9,13 @@ workflows:
       - name: Install dependencies
         script: |
           npm ci
-      - name: Install Capacitor CLI and add iOS platform
+      - name: Install Capacitor CLI, reset iOS, and add fresh
         script: |
           npm install @capacitor/cli@latest --save-dev
-          npx cap add ios --app-name "Gig Connect" --app-id com.griffservices.gigconnect
+          rm -rf ios/ || true
+          npx cap add ios --app-name "GigConnect" --app-id com.griffservices.gigconnect
           npx cap sync ios
-      - name: Check Podfile exists
-        script: |
-          ls ios/Podfile || (echo "Podfile missing after add/sync"; exit 1)
+          ls ios/Podfile || (echo "Podfile still missing!"; exit 1)
       - name: Install pods
         script: |
           cd ios/App
