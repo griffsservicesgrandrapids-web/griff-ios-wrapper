@@ -17,18 +17,14 @@ workflows:
       - ls -la www || echo "WWW EMPTY AFTER COPY"
       - rm -rf ios || true
       - npx cap add ios
-      - ls -la ios/App || echo "NO IOS/APP AFTER ADD"
+      - npx cap sync ios --verbose || echo "SYNC FAILED"
       - cd ios/App
-      - ls -la || echo "IOS/APP CONTENTS AFTER ADD"
-      - pod repo update || true
-      - pod install --repo-update || echo "POD INSTALL FAILED"
+      - pod install --repo-update
+      - ls -la
       - cd ../../
-      - npx cap sync ios --verbose || echo "SYNC FAILED - VERBOSE OUTPUT ABOVE"
-      - ls -la ios/App/App.xcworkspace || (echo "WORKSPACE NOT FOUND!"; exit 1)
-      - ls -la ios/App || echo "IOS/APP AFTER SYNC"
-      - xcode-project use-profiles || echo "USE-PROFILES FAILED"
+      - ls -la ios/App/App.xcworkspace || (echo "WORKSPACE NOT FOUND"; exit 1)
+      - xcode-project use-profiles
       - cd ios/App
-      - ls -la || echo "FINAL IOS/APP BEFORE ARCHIVE"
       - xcodebuild -workspace App.xcworkspace -scheme App -configuration Release -sdk iphoneos -derivedDataPath build -archivePath build/App.xcarchive archive
     artifacts:
       - ios/App/build/ios/ipa/*.ipa
