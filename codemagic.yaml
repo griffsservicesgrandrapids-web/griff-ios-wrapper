@@ -13,42 +13,45 @@ workflows:
 
     scripts:
 
-      # Install dependencies
+      # install dependencies
       - npm ci
       - npm install @capacitor/cli @capacitor/core @capacitor/ios
 
-      # Build web project
+      # build web assets
       - npm run build
 
-      # Prepare Capacitor web directory
+      # move web build to capacitor folder
       - mkdir -p www
       - cp -r dist/* www/ || true
 
-      # Remove any old iOS project
+      # reset ios platform
       - rm -rf ios
 
-      # Add fresh iOS platform
+      # add ios platform
       - npx cap add ios
 
-      # Sync web assets + plugins
+      # sync plugins + web assets
       - npx cap sync ios
 
-      # Verify project exists
+      # verify ios project structure
       - ls -la ios
       - ls -la ios/App
 
-      # Install CocoaPods dependencies
+      # ensure Podfile exists before continuing
+      - ls ios/App/Podfile || (echo "Podfile missing"; exit 1)
+
+      # install pods
       - cd ios/App
       - pod install
       - cd ../../
 
-      # Verify workspace was created
-      - ls -la ios/App/App.xcworkspace || (echo "Workspace not generated"; exit 1)
+      # ensure workspace exists
+      - ls ios/App/App.xcworkspace || (echo "Workspace missing"; exit 1)
 
-      # Apply signing
+      # apply signing profiles
       - xcode-project use-profiles
 
-      # Build archive
+      # build archive
       - cd ios/App
       - xcodebuild \
         -workspace App.xcworkspace \
