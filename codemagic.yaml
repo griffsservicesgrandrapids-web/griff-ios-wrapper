@@ -19,20 +19,28 @@ workflows:
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
           npx cap add ios
           npx cap sync ios --no-open
-          npx cap sync ios --no-open  # double for luck
+          npx cap sync ios --no-open
           cd ios/App
           pod deintegrate || true
           pod repo update || true
           pod install --repo-update
           cd ../..
-          # Force SPM workspace creation
-          cd ios/App
-          xcodebuild -resolvePackageDependencies -workspace App.xcworkspace || echo "SPM resolve failed!"
-          cd ../..
+          # Force SPM resolution from root
+          xcodebuild -project ios/App/App.xcodeproj -resolvePackageDependencies || echo "Project resolve failed!"
           ls -la ios/App/App.xcworkspace || echo "Workspace still missing!"
+          ls -la ios/App/App.xcodeproj || echo "Even the project file is missing!"
       - name: Build iOS app
         script: |
+          # Try workspace first
           xcodebuild -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath ios/build \
+            -archivePath ios/build/Archive.xcarchive \
+            archive || \
+          # Fallback to project if workspace absent
+          xcodebuild -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
