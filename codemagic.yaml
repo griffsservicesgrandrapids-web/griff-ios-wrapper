@@ -2,7 +2,9 @@ workflows:
   ios-build:
     name: Build iOS
     instance_type: mac_mini_m1
-    max_build_duration: 90  # Give it more time for sync/pods
+    max_build_duration: 90
+    integrations:
+      app_store_connect: APIKey   # ← This line fixes the error. Change to your actual integration name if different
     scripts:
       - name: Install dependencies
         script: |
@@ -10,22 +12,18 @@ workflows:
       - name: Build web assets
         script: |
           npm run build
-          ls dist/ || echo "dist folder missing after build!"  # Debug check
-      - name: Reset and setup iOS platform
+      - name: Full iOS platform reset and setup
         script: |
           rm -rf ios/ || true
           rm -rf node_modules/@capacitor/ios || true
           npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
           npx cap add ios
           npx cap sync ios --no-open
-          # Force CocoaPods update and install
           cd ios/App
           pod repo update || true
           pod install --repo-update
           cd ../..
-          # Debug: check if workspace exists
-          ls ios/App/App.xcworkspace || echo "ERROR: xcworkspace still missing!"
-          ls ios/App/Pods || echo "Pods folder missing!"
+          ls ios/App/App.xcworkspace || echo "Workspace missing after sync!"
       - name: Build iOS app
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
