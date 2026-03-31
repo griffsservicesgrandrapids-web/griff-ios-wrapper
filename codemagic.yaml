@@ -32,7 +32,7 @@ workflows:
 
           echo "=== iOS folder structure after cap add ==="
           ls -la ios/
-          ls -la ios/App/ || echo "ios/App missing!"
+          ls -la ios/App/ || echo "ios/App is missing!"
 
       - name: Build web assets and sync
         script: |
@@ -46,15 +46,14 @@ workflows:
         script: |
           cd ios/App
 
-          # Create Podfile if missing (fallback for newer Capacitor)
+          # Create minimal Podfile if none exists (common with newer Capacitor + SPM)
           if [ ! -f "Podfile" ]; then
-            echo "Podfile not found - creating minimal one..."
-            cat > Podfile << EOF
+            echo "Podfile not found - creating minimal Podfile..."
+            cat > Podfile << 'EOF'
 platform :ios, '13.0'
 target 'App' do
   use_frameworks!
-  pod 'Capacitor'
-  pod 'Cordova'
+  # Capacitor pods will be added by cap sync
 end
 EOF
           fi
@@ -65,8 +64,8 @@ EOF
           pod install --repo-update
 
           echo "=== Final check after pod install ==="
-          ls -la App.xcworkspace || echo "Workspace missing"
-          ls -la App.xcodeproj
+          ls -la App.xcworkspace || echo "❌ Workspace missing"
+          ls -la App.xcodeproj || echo "❌ Project missing"
           cd ../..
 
       - name: Set up code signing
