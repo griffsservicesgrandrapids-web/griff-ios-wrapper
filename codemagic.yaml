@@ -20,28 +20,31 @@ workflows:
         script: |
           npm ci
 
-      - name: Build web assets and sync Capacitor
+      - name: Prepare iOS + Install CocoaPods
         script: |
-          npm run build
-          ls -la dist/ || echo "ERROR: dist/ folder missing!"
+          # Ensure iOS folder exists
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
 
-          # This should create or update the ios/App folder and prepare for pods
-          npx cap sync ios --no-open
-
-          echo "=== Contents of ios/App after cap sync ==="
-          ls -la ios/App || echo "ios/App folder is missing!"
-
-      - name: Install CocoaPods (this generates the .xcworkspace)
-        script: |
           cd ios/App
           echo "Running pod install..."
           pod install --repo-update
 
           echo "=== Workspace check after pod install ==="
-          ls -la App.xcworkspace || echo "❌ App.xcworkspace is STILL MISSING!"
-          ls -la *.xcodeproj || echo "No .xcodeproj found"
-          ls -la Podfile.lock || echo "No Podfile.lock"
+          ls -la App.xcworkspace || echo "❌ Workspace missing after pod install!"
+          ls -la *.xcodeproj
           cd ../..
+
+      - name: Build web assets and sync Capacitor
+        script: |
+          npm run build
+          ls -la dist/ || echo "ERROR: dist/ missing!"
+
+          npx cap sync ios --no-open
+
+          echo "=== Contents of ios/App after cap sync ==="
+          ls -la ios/App
 
       - name: Set up code signing
         script: |
