@@ -20,16 +20,20 @@ workflows:
         script: |
           npm ci
 
+      - name: Ensure Capacitor CLI is available
+        script: |
+          # Force install latest Capacitor CLI + core + ios as dev dependencies
+          npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
+
       - name: Clean and recreate iOS platform
         script: |
-          # Aggressive clean - remove old iOS folder to start fresh
           rm -rf ios/
 
-          # Re-add the iOS platform
+          # Now run cap add with the freshly installed CLI
           npx cap add ios
 
-          echo "=== iOS folder created ==="
-          ls -la ios/App
+          echo "=== iOS folder after cap add ==="
+          ls -la ios/App || echo "ios/App still missing after cap add!"
 
       - name: Build web assets and sync
         script: |
@@ -49,7 +53,6 @@ workflows:
           echo "=== Workspace check after pod install ==="
           ls -la App.xcworkspace || echo "❌ Workspace STILL MISSING!"
           ls -la *.xcodeproj
-          ls -la Podfile*
           cd ../..
 
       - name: Set up code signing
