@@ -30,46 +30,33 @@ workflows:
           rm -rf ios/
           npx cap add ios
 
-          echo "=== iOS folder after cap add ==="
-          ls -la ios/
-
       - name: Build web assets and sync
         script: |
           npm run build
-          ls -la dist/ || echo "ERROR: dist/ missing!"
-
           npx cap sync ios --no-open
-
-          echo "=== After cap sync ==="
-          ls -la ios/App
 
       - name: Install CocoaPods
         script: |
-          cd ios/App
-          pod install --repo-update
-
-          echo "=== Final project check ==="
-          ls -la App.xcworkspace || echo "Workspace missing"
-          ls -la App.xcodeproj || echo "Project missing"
-          cd ../..
+          cd ios/App && pod install --repo-update && cd ../..
 
       - name: Set up code signing
         script: |
-          echo "Applying provisioning profile to main project only..."
+          echo "Applying provisioning profile..."
           xcode-project use-profiles \
             --project "$XCODE_PROJECT" \
             --bundle-identifier "$BUNDLE_ID" \
             --distribution-type app_store
 
-          echo "=== Signing settings verification ==="
-          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN_STYLE|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER|PRODUCT_BUNDLE_IDENTIFIER"
+          echo "=== Signing settings after use-profiles ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE"
 
       - name: Build IPA
         script: |
-          echo "Starting archive with manual signing..."
+          echo "Starting archive..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
+            --export-options-plist=/Users/builder/export_options.plist \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
