@@ -20,31 +20,37 @@ workflows:
         script: |
           npm ci
 
-      - name: Prepare iOS + Install CocoaPods
+      - name: Clean and recreate iOS platform
         script: |
-          # Ensure iOS folder exists
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
+          # Aggressive clean - remove old iOS folder to start fresh
+          rm -rf ios/
 
-          cd ios/App
-          echo "Running pod install..."
-          pod install --repo-update
+          # Re-add the iOS platform
+          npx cap add ios
 
-          echo "=== Workspace check after pod install ==="
-          ls -la App.xcworkspace || echo "❌ Workspace missing after pod install!"
-          ls -la *.xcodeproj
-          cd ../..
+          echo "=== iOS folder created ==="
+          ls -la ios/App
 
-      - name: Build web assets and sync Capacitor
+      - name: Build web assets and sync
         script: |
           npm run build
           ls -la dist/ || echo "ERROR: dist/ missing!"
 
           npx cap sync ios --no-open
 
-          echo "=== Contents of ios/App after cap sync ==="
+          echo "=== After cap sync ==="
           ls -la ios/App
+
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install --repo-update
+
+          echo "=== Workspace check after pod install ==="
+          ls -la App.xcworkspace || echo "❌ Workspace STILL MISSING!"
+          ls -la *.xcodeproj
+          ls -la Podfile*
+          cd ../..
 
       - name: Set up code signing
         script: |
