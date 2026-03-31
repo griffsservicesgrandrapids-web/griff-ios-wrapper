@@ -30,14 +30,44 @@ workflows:
           rm -rf ios/
           npx cap add ios
 
+          echo "=== iOS folder structure after cap add ==="
+          ls -la ios/
+          ls -la ios/App/ || echo "ios/App missing!"
+
       - name: Build web assets and sync
         script: |
           npm run build
-          npx cap sync ios          # <-- removed --no-open
+          npx cap sync ios
+
+          echo "=== After cap sync ==="
+          ls -la ios/App/
 
       - name: Install CocoaPods
         script: |
-          cd ios/App && pod install --repo-update && cd ../..
+          cd ios/App
+
+          # Create Podfile if missing (fallback for newer Capacitor)
+          if [ ! -f "Podfile" ]; then
+            echo "Podfile not found - creating minimal one..."
+            cat > Podfile << EOF
+platform :ios, '13.0'
+target 'App' do
+  use_frameworks!
+  pod 'Capacitor'
+  pod 'Cordova'
+end
+EOF
+          fi
+
+          echo "=== Podfile contents ==="
+          cat Podfile
+
+          pod install --repo-update
+
+          echo "=== Final check after pod install ==="
+          ls -la App.xcworkspace || echo "Workspace missing"
+          ls -la App.xcodeproj
+          cd ../..
 
       - name: Set up code signing
         script: |
@@ -47,8 +77,8 @@ workflows:
             --bundle-identifier "$BUNDLE_ID" \
             --distribution-type app_store
 
-          echo "=== Signing settings after use-profiles ==="
-          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE"
+          echo "=== Signing settings verification ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE" || echo "No signing settings found"
 
       - name: Build IPA
         script: |
