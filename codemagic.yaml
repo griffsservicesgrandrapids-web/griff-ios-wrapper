@@ -33,7 +33,7 @@ workflows:
       - name: Build web assets and sync
         script: |
           npm run build
-          npx cap sync ios --no-open
+          npx cap sync ios          # <-- removed --no-open
 
       - name: Install CocoaPods
         script: |
