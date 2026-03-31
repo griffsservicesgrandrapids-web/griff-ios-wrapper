@@ -11,7 +11,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
 
-      node: 20
+      node: 22          # ← Changed to 22 (required by Capacitor v8)
       xcode: latest
       cocoapods: default
 
@@ -20,20 +20,18 @@ workflows:
         script: |
           npm ci
 
-      - name: Ensure Capacitor CLI is available
+      - name: Ensure Capacitor CLI
         script: |
-          # Force install latest Capacitor CLI + core + ios as dev dependencies
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
 
       - name: Clean and recreate iOS platform
         script: |
           rm -rf ios/
 
-          # Now run cap add with the freshly installed CLI
           npx cap add ios
 
           echo "=== iOS folder after cap add ==="
-          ls -la ios/App || echo "ios/App still missing after cap add!"
+          ls -la ios/ || echo "ios/ folder missing!"
 
       - name: Build web assets and sync
         script: |
@@ -43,7 +41,7 @@ workflows:
           npx cap sync ios --no-open
 
           echo "=== After cap sync ==="
-          ls -la ios/App
+          ls -la ios/App || echo "ios/App still missing!"
 
       - name: Install CocoaPods
         script: |
