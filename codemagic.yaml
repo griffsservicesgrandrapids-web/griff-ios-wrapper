@@ -42,35 +42,27 @@ workflows:
           echo "=== After cap sync ==="
           ls -la ios/App/
 
-      - name: Install CocoaPods
+      - name: Install CocoaPods (if Podfile exists)
         script: |
-          cd ios/App
-
-          # Create minimal Podfile if none exists (common with newer Capacitor + SPM)
-          if [ ! -f "Podfile" ]; then
-            echo "Podfile not found - creating minimal Podfile..."
-            cat > Podfile << 'EOF'
-platform :ios, '13.0'
-target 'App' do
-  use_frameworks!
-  # Capacitor pods will be added by cap sync
-end
-EOF
+          if [ -d "ios/App" ]; then
+            cd ios/App
+            if [ -f "Podfile" ]; then
+              echo "Podfile found - running pod install"
+              pod install --repo-update
+            else
+              echo "No Podfile found - skipping CocoaPods (SPM mode)"
+            fi
+            echo "=== Final check ==="
+            ls -la App.xcworkspace || echo "Workspace missing"
+            ls -la App.xcodeproj || echo "Project missing"
+            cd ../..
+          else
+            echo "ERROR: ios/App directory not found"
           fi
-
-          echo "=== Podfile contents ==="
-          cat Podfile
-
-          pod install --repo-update
-
-          echo "=== Final check after pod install ==="
-          ls -la App.xcworkspace || echo "❌ Workspace missing"
-          ls -la App.xcodeproj || echo "❌ Project missing"
-          cd ../..
 
       - name: Set up code signing
         script: |
-          echo "Applying provisioning profile..."
+          echo "Applying provisioning profile to main project..."
           xcode-project use-profiles \
             --project "$XCODE_PROJECT" \
             --bundle-identifier "$BUNDLE_ID" \
