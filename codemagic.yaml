@@ -7,10 +7,6 @@ workflows:
       app_store_connect: APIKey
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.griffservices.griffsservices
-
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
@@ -37,7 +33,6 @@ workflows:
           pod install --repo-update
           cd ../..
 
-          # Verify workspace exists
           ls -la "$XCODE_WORKSPACE" || echo "WARNING: Workspace still missing!"
 
       - name: Set up code signing
