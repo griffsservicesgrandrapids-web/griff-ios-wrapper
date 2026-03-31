@@ -2,72 +2,60 @@ workflows:
   ios-build:
     name: Build iOS
     instance_type: mac_mini_m1
-    max_build_duration: 120  # extra time for pods/sync
+    max_build_duration: 120
     integrations:
-      app_store_connect: APIKey
+      app_store_connect: APIKey   # your existing integration
+
+    environment:
+      ios_signing:
+        distribution_type: app_store      # Change to "ad_hoc" only if you need Ad Hoc testing
+        bundle_identifier: com.yourcompany.yourapp   # ← MUST match your app's real bundle ID exactly
+
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+
+      node: 20
+      xcode: latest                     # or pin to a stable version if Xcode 26.2 causes issues
+      cocoapods: default
+
     scripts:
-      - name: Install dependencies
+      - name: Install npm dependencies
         script: |
           npm ci
+
       - name: Build web assets
         script: |
           npm run build
           ls -la dist/ || echo "ERROR: dist/ missing after build!"
-      - name: Full iOS reset and sync
+
+      - name: Sync Capacitor iOS + CocoaPods
         script: |
-          rm -rf ios/ node_modules/@capacitor/ios || true
-          npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
-          npx cap add ios
+          # Clean previous iOS folder only if needed (avoid aggressive rm every time)
           npx cap sync ios --no-open
-          npx cap sync ios --no-open
+
           cd ios/App
-          pod deintegrate || true
-          pod repo update || true
           pod install --repo-update
           cd ../..
-          # Force SPM resolution from root
-          xcodebuild -project ios/App/App.xcodeproj -resolvePackageDependencies || echo "Project resolve failed!"
-          ls -la ios/App/App.xcworkspace || echo "Workspace still missing!"
-          ls -la ios/App/App.xcodeproj || echo "Even the project file is missing!"
-      - name: Full iOS reset and sync
+
+          # Verify workspace exists
+          ls -la "$XCODE_WORKSPACE" || echo "WARNING: Workspace still missing!"
+
+      - name: Set up code signing
         script: |
-          rm -rf ios/ node_modules/@capacitor/ios || true
-          npm install @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest --save-dev
-          npx cap add ios
-          npx cap sync ios --no-open
-          npx cap sync ios --no-open
-          cd ios/App
-          pod deintegrate || true
-          pod repo update || true
-          pod install --repo-update
-          cd ../..
-          # Force Xcode to resolve SPM and generate workspace
-          xcodebuild -project ios/App/App.xcodeproj -resolvePackageDependencies || echo "Project SPM resolve failed!"
-          xcodebuild -resolvePackageDependencies || echo "Global resolve failed!"
-          # Final check
-          ls -la ios/App/App.xcworkspace || echo "Workspace STILL MISSING after all!"
-          ls -la ios/App/App.xcodeproj || echo "Even project file missing!"
-      - name: Build iOS app
+          xcode-project use-profiles
+
+      - name: Build IPA
         script: |
-          # Prefer workspace
-          xcodebuild -workspace ios/App/App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath ios/build \
-            -archivePath ios/build/Archive.xcarchive \
-            archive || \
-          # Fallback to project (if workspace failed to generate)
-          echo "Workspace missing, falling back to .xcodeproj"
-          xcodebuild -project ios/App/App.xcodeproj \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -derivedDataPath ios/build \
-            -archivePath ios/build/Archive.xcarchive \
-            archive
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-destination 'generic/platform=iOS'"
+
     artifacts:
-      - ios/build/Archive.xcarchive/**
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
     publishing:
       app_store_connect:
         auth: integration
