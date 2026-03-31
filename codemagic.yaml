@@ -9,9 +9,10 @@ workflows:
     environment:
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
 
-      node: 22          # ← Changed to 22 (required by Capacitor v8)
+      node: 22
       xcode: latest
       cocoapods: default
 
@@ -31,7 +32,7 @@ workflows:
           npx cap add ios
 
           echo "=== iOS folder after cap add ==="
-          ls -la ios/ || echo "ios/ folder missing!"
+          ls -la ios/
 
       - name: Build web assets and sync
         script: |
@@ -41,16 +42,16 @@ workflows:
           npx cap sync ios --no-open
 
           echo "=== After cap sync ==="
-          ls -la ios/App || echo "ios/App still missing!"
+          ls -la ios/App || echo "ios/App folder missing!"
 
       - name: Install CocoaPods
         script: |
           cd ios/App
           pod install --repo-update
 
-          echo "=== Workspace check after pod install ==="
-          ls -la App.xcworkspace || echo "❌ Workspace STILL MISSING!"
-          ls -la *.xcodeproj
+          echo "=== Final workspace & project check ==="
+          ls -la App.xcworkspace || echo "❌ Workspace missing"
+          ls -la App.xcodeproj || echo "❌ Project missing"
           cd ../..
 
       - name: Set up code signing
@@ -59,10 +60,20 @@ workflows:
 
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags="-destination 'generic/platform=iOS'"
+          # Try workspace first, fallback to project if workspace is missing
+          if [ -f "$XCODE_WORKSPACE" ]; then
+            echo "Using workspace for build"
+            xcode-project build-ipa \
+              --workspace "$XCODE_WORKSPACE" \
+              --scheme "$XCODE_SCHEME" \
+              --archive-flags="-destination 'generic/platform=iOS'"
+          else
+            echo "Workspace missing - falling back to project"
+            xcode-project build-ipa \
+              --project "$XCODE_PROJECT" \
+              --scheme "$XCODE_SCHEME" \
+              --archive-flags="-destination 'generic/platform=iOS'"
+          fi
 
     artifacts:
       - build/ios/ipa/*.ipa
