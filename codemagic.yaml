@@ -1,35 +1,78 @@
+workflows:
+  ios-build:
+    name: Build iOS
+    instance_type: mac_mini_m1
+    max_build_duration: 120
+    integrations:
+      app_store_connect: APIKey
 
-Workspace missing - falling back to project
-Using Xcode 26.2 (17C52)
-Check App.xcodeproj build settings
-Execute "xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSettings"
+    environment:
+      vars:
+        XCODE_PROJECT: "ios/App/App.xcodeproj"
+        XCODE_SCHEME: "App"
 
-Archive App.xcodeproj
-Execute "xcodebuild -project ios/App/App.xcodeproj -scheme App -destination generic/platform=iOS -archivePath /Users/builder/clone/build/ios/xcarchive/App_2sgcjhxi.xcarchive archive COMPILER_INDEX_STORE_ENABLE=NO CODE_SIGN_STYLE=Manual"
+      node: 22
+      xcode: latest
+      cocoapods: default
 
-Workspace missing - falling back to project
-Using Xcode 26.2 (17C52)
-Check App.xcodeproj build settings
-Execute "xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSettings"
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
 
-Archive App.xcodeproj
-Execute "xcodebuild -project ios/App/App.xcodeproj -scheme App -destination generic/platform=iOS -archivePath /Users/builder/clone/build/ios/xcarchive/App_2sgcjhxi.xcarchive archive COMPILER_INDEX_STORE_ENABLE=NO CODE_SIGN_STYLE=Manual"
+      - name: Ensure Capacitor CLI
+        script: |
+          npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
 
+      - name: Clean and recreate iOS platform
+        script: |
+          rm -rf ios/
+          npx cap add ios
 
-❌  /Users/builder/clone/ios/App/App.xcodeproj: error: "App" requires a provisioning profile. Select a provisioning profile in the Signing & Capabilities editor. (in target 'App' from project 'App')
+          echo "=== iOS folder after cap add ==="
+          ls -la ios/
 
+      - name: Build web assets and sync
+        script: |
+          npm run build
+          ls -la dist/ || echo "ERROR: dist/ missing!"
 
-Failed to archive ios/App/App.xcodeproj
+          npx cap sync ios --no-open
 
+          echo "=== After cap sync ==="
+          ls -la ios/App
 
-Build failed :|
-Step 8 script `Build IPA` exited with status code 65
+      - name: Install CocoaPods
+        script: |
+          cd ios/App
+          pod install --repo-update
 
-❌  /Users/builder/clone/ios/App/App.xcodeproj: error: "App" requires a provisioning profile. Select a provisioning profile in the Signing & Capabilities editor. (in target 'App' from project 'App')
+          echo "=== Final workspace & project check ==="
+          ls -la App.xcworkspace || echo "Workspace missing"
+          ls -la App.xcodeproj || echo "Project missing"
+          cd ../..
 
+      - name: Set up code signing
+        script: |
+          echo "Applying profiles to main project only..."
+          xcode-project use-profiles --project "$XCODE_PROJECT"
 
-Failed to archive ios/App/App.xcodeproj
+          echo "=== Signing settings after use-profiles ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE"
 
+      - name: Build IPA
+        script: |
+          echo "Starting archive..."
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags="-destination 'generic/platform=iOS'"
 
-Build failed :|
-Step 8 script `Build IPA` exited with status code 65
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
