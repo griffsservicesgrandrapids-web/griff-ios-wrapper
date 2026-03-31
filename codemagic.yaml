@@ -2,7 +2,7 @@ workflows:
   ios-build:
     name: Build iOS
     instance_type: mac_mini_m1
-    max_build_duration: 120
+    max_build_duration: 150
     integrations:
       app_store_connect: APIKey
 
@@ -25,15 +25,25 @@ workflows:
           npm run build
           ls -la dist/ || echo "ERROR: dist/ missing after build!"
 
-      - name: Sync Capacitor iOS + CocoaPods
+      - name: Prepare iOS project
         script: |
+          # Re-add iOS platform cleanly if needed
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+
           npx cap sync ios --no-open
 
+          echo "=== Listing iOS folder ==="
+          ls -la ios/App
+
+      - name: Install CocoaPods
+        script: |
           cd ios/App
           pod install --repo-update
+          echo "=== Workspace check after pod install ==="
+          ls -la App.xcworkspace || echo "Workspace still missing!"
           cd ../..
-
-          ls -la "$XCODE_WORKSPACE" || echo "WARNING: Workspace still missing!"
 
       - name: Set up code signing
         script: |
@@ -41,14 +51,16 @@ workflows:
 
       - name: Build IPA
         script: |
+          cd ios/App
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
+            --workspace "App.xcworkspace" \
+            --scheme "App" \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+      - ios/App/*.xcworkspace   # for debugging
 
     publishing:
       app_store_connect:
