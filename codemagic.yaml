@@ -4,19 +4,19 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 120
     integrations:
-      app_store_connect: APIKey   # your existing integration
+      app_store_connect: APIKey
 
     environment:
       ios_signing:
-        distribution_type: app_store      # Change to "ad_hoc" only if you need Ad Hoc testing
-        bundle_identifier: com.yourcompany.yourapp   # ← MUST match your app's real bundle ID exactly
+        distribution_type: app_store
+        bundle_identifier: com.griffservices.griffsservices
 
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
 
       node: 20
-      xcode: latest                     # or pin to a stable version if Xcode 26.2 causes issues
+      xcode: latest
       cocoapods: default
 
     scripts:
@@ -31,7 +31,6 @@ workflows:
 
       - name: Sync Capacitor iOS + CocoaPods
         script: |
-          # Clean previous iOS folder only if needed (avoid aggressive rm every time)
           npx cap sync ios --no-open
 
           cd ios/App
