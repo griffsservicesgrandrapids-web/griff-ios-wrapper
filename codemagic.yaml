@@ -2,7 +2,7 @@ workflows:
   ios-build:
     name: Build iOS
     instance_type: mac_mini_m1
-    max_build_duration: 150
+    max_build_duration: 120
     integrations:
       app_store_connect: APIKey
 
@@ -27,21 +27,21 @@ workflows:
 
       - name: Prepare iOS project
         script: |
-          # Re-add iOS platform cleanly if needed
+          # Re-add iOS platform only if missing
           if [ ! -d "ios" ]; then
             npx cap add ios
           fi
 
           npx cap sync ios --no-open
 
-          echo "=== Listing iOS folder ==="
+          echo "=== iOS folder contents ==="
           ls -la ios/App
 
       - name: Install CocoaPods
         script: |
           cd ios/App
           pod install --repo-update
-          echo "=== Workspace check after pod install ==="
+          echo "=== Workspace check ==="
           ls -la App.xcworkspace || echo "Workspace still missing!"
           cd ../..
 
@@ -60,7 +60,6 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - ios/App/*.xcworkspace   # for debugging
 
     publishing:
       app_store_connect:
