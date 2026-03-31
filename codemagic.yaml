@@ -10,6 +10,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
+        BUNDLE_ID: "com.griffservices.griffsservices"
 
       node: 22
       xcode: latest
@@ -47,22 +48,25 @@ workflows:
           cd ios/App
           pod install --repo-update
 
-          echo "=== Final workspace & project check ==="
+          echo "=== Final project check ==="
           ls -la App.xcworkspace || echo "Workspace missing"
           ls -la App.xcodeproj || echo "Project missing"
           cd ../..
 
       - name: Set up code signing
         script: |
-          echo "Applying profiles to main project only..."
-          xcode-project use-profiles --project "$XCODE_PROJECT"
+          echo "Applying provisioning profile to main project only..."
+          xcode-project use-profiles \
+            --project "$XCODE_PROJECT" \
+            --bundle-identifier "$BUNDLE_ID" \
+            --distribution-type app_store
 
-          echo "=== Signing settings after use-profiles ==="
-          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE"
+          echo "=== Signing settings verification ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN_STYLE|DEVELOPMENT_TEAM|PROVISIONING_PROFILE_SPECIFIER|PRODUCT_BUNDLE_IDENTIFIER"
 
       - name: Build IPA
         script: |
-          echo "Starting archive..."
+          echo "Starting archive with manual signing..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
