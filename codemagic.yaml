@@ -27,22 +27,23 @@ workflows:
 
       - name: Prepare iOS project
         script: |
-          # Re-add iOS platform only if missing
+          # Ensure iOS platform exists
           if [ ! -d "ios" ]; then
             npx cap add ios
           fi
 
           npx cap sync ios --no-open
 
-          echo "=== iOS folder contents ==="
+          echo "=== Contents of ios/App ==="
           ls -la ios/App
 
       - name: Install CocoaPods
         script: |
           cd ios/App
           pod install --repo-update
-          echo "=== Workspace check ==="
-          ls -la App.xcworkspace || echo "Workspace still missing!"
+
+          echo "=== Final workspace check ==="
+          ls -la App.xcworkspace || echo "❌ Workspace is STILL missing!"
           cd ../..
 
       - name: Set up code signing
@@ -51,10 +52,9 @@ workflows:
 
       - name: Build IPA
         script: |
-          cd ios/App
           xcode-project build-ipa \
-            --workspace "App.xcworkspace" \
-            --scheme "App" \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
