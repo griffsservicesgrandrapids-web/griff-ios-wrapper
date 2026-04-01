@@ -7,6 +7,10 @@ workflows:
       app_store_connect: APIKey
 
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.griffservices.griffsservices
+
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
@@ -34,18 +38,25 @@ workflows:
           npm run build
           npx cap sync ios
 
-      - name: Install CocoaPods (if needed)
+      - name: Install CocoaPods
         script: |
-          if [ -d "ios/App" ] && [ -f "ios/App/Podfile" ]; then
-            cd ios/App && pod install --repo-update && cd ../..
-            echo "CocoaPods installed"
-          else
-            echo "No Podfile - skipping (SPM likely in use)"
+          if [ -d "ios/App" ]; then
+            cd ios/App
+            if [ -f "Podfile" ]; then
+              pod install --repo-update
+            fi
+            echo "=== Files after pod install ==="
+            ls -la App.xcworkspace App.xcodeproj || true
+            cd ../..
           fi
 
       - name: Set up code signing
         script: |
+          echo "=== Running use-profiles ==="
           xcode-project use-profiles
+
+          echo "=== Signing settings check ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN_STYLE|DEVELOPMENT_TEAM|PROVISIONING_PROFILE|PRODUCT_BUNDLE_IDENTIFIER" || echo "No signing info found"
 
       - name: Build IPA
         script: |
