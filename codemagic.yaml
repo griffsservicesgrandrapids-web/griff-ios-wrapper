@@ -38,17 +38,21 @@ workflows:
         script: |
           if [ -d "ios/App" ] && [ -f "ios/App/Podfile" ]; then
             cd ios/App && pod install --repo-update && cd ../..
+            echo "CocoaPods installed"
           else
-            echo "No Podfile found - skipping CocoaPods (using SPM)"
+            echo "No Podfile - skipping (SPM likely in use)"
           fi
 
-      - name: Build IPA (Automatic Signing)
+      - name: Set up code signing
         script: |
-          echo "Starting archive with automatic signing..."
+          xcode-project use-profiles
+
+      - name: Build IPA
+        script: |
+          echo "Starting archive..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags="-destination 'generic/platform=iOS'"
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
