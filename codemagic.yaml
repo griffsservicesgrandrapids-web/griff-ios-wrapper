@@ -10,7 +10,6 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUNDLE_ID: "com.griffservices.griffsservices"
 
       node: 22
       xcode: latest
@@ -30,54 +29,25 @@ workflows:
           rm -rf ios/
           npx cap add ios
 
-          echo "=== iOS folder structure after cap add ==="
-          ls -la ios/
-          ls -la ios/App/ || echo "ios/App is missing!"
-
       - name: Build web assets and sync
         script: |
           npm run build
           npx cap sync ios
 
-          echo "=== After cap sync ==="
-          ls -la ios/App/
-
-      - name: Install CocoaPods (if Podfile exists)
+      - name: Install CocoaPods (if needed)
         script: |
-          if [ -d "ios/App" ]; then
-            cd ios/App
-            if [ -f "Podfile" ]; then
-              echo "Podfile found - running pod install"
-              pod install --repo-update
-            else
-              echo "No Podfile found - skipping CocoaPods (SPM mode)"
-            fi
-            echo "=== Final check ==="
-            ls -la App.xcworkspace || echo "Workspace missing"
-            ls -la App.xcodeproj || echo "Project missing"
-            cd ../..
+          if [ -d "ios/App" ] && [ -f "ios/App/Podfile" ]; then
+            cd ios/App && pod install --repo-update && cd ../..
           else
-            echo "ERROR: ios/App directory not found"
+            echo "No Podfile found - skipping CocoaPods (using SPM)"
           fi
 
-      - name: Set up code signing
+      - name: Build IPA (Automatic Signing)
         script: |
-          echo "Applying provisioning profile to main project..."
-          xcode-project use-profiles \
-            --project "$XCODE_PROJECT" \
-            --bundle-identifier "$BUNDLE_ID" \
-            --distribution-type app_store
-
-          echo "=== Signing settings verification ==="
-          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE" || echo "No signing settings found"
-
-      - name: Build IPA
-        script: |
-          echo "Starting archive..."
+          echo "Starting archive with automatic signing..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --export-options-plist=/Users/builder/export_options.plist \
             --archive-flags="-destination 'generic/platform=iOS'"
 
     artifacts:
