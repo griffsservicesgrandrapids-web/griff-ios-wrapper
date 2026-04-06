@@ -14,6 +14,8 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
+        PROFILE_NAME: "GriffServices App Store Profile"   # ← CHANGE THIS if your profile name is different
+
       node: 22
       xcode: latest
       cocoapods: default
@@ -45,6 +47,15 @@ workflows:
         script: |
           echo "=== Applying provisioning profiles ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
+
+          echo "=== Forcing provisioning profile by name ==="
+          xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -showBuildSettings | cat
 
       - name: Build IPA
         script: |
