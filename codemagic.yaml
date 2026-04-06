@@ -9,7 +9,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.griffservices.griffservices   # ← extremely important
+        bundle_identifier: com.griffservices.griffservices
 
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
@@ -20,19 +20,14 @@ workflows:
 
     scripts:
       - name: Install npm dependencies
-        script: npm ci
+        script: |
+          npm ci
 
-      - name: Ensure Capacitor CLI
+      - name: Ensure Capacitor CLI and Sync iOS
         script: |
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
-
-      - name: Clean and recreate iOS platform
-        script: |
           rm -rf ios/
           npx cap add ios
-
-      - name: Build web assets and sync
-        script: |
           npm run build
           npx cap sync ios
 
@@ -48,7 +43,7 @@ workflows:
 
       - name: Set up code signing
         script: |
-          echo "=== Applying profiles ==="
+          echo "=== Applying provisioning profiles ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
 
       - name: Build IPA
