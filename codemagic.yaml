@@ -30,24 +30,9 @@ workflows:
           npm run build
           npx cap sync ios
 
-          echo "=== Full directory structure after sync ==="
-          find ios -type f -name "Podfile" -o -name "*.xcodeproj" -o -name "*.xcworkspace" | head -20
-
-      - name: Install CocoaPods
-        script: |
-          echo "=== Searching for Podfile ==="
-          PODFILE_PATH=$(find ios -name "Podfile" -type f | head -1)
-
-          if [ -n "$PODFILE_PATH" ]; then
-            echo "Found Podfile at: $PODFILE_PATH"
-            cd "$(dirname "$PODFILE_PATH")"
-            pod install --repo-update
-            echo "Pod install completed"
-          else
-            echo "ERROR: No Podfile found anywhere in ios/ directory"
-            ls -laR ios/
-            exit 1
-          fi
+          echo "=== Project structure after sync ==="
+          ls -la ios/
+          ls -la ios/App/
 
       - name: Set up code signing
         script: |
