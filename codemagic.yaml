@@ -15,7 +15,7 @@ workflows:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         TEAM_ID: "32K5KT8DDH"
-        PROFILE_NAME: "Mobile Provision"
+        PROFILE_NAME: "GriffAppStore"
 
       node: 22
       xcode: latest
@@ -35,7 +35,6 @@ workflows:
 
       - name: Set up code signing
         script: |
-          echo "=== Forcing Team ID and Profile ==="
           xcodebuild -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
@@ -47,7 +46,6 @@ workflows:
 
       - name: Build IPA
         script: |
-          echo "Starting archive..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
