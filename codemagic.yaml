@@ -14,7 +14,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUILD_NUMBER: "5"          # increase this every time
+        BUILD_NUMBER: "6"          # Increase this every new build
 
       node: 22
       xcode: latest
@@ -46,8 +46,7 @@ workflows:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
 
-    # Publishing turned off for now so we can get a clean build
-    # publishing:
-    #   app_store_connect:
-    #     auth: integration
-    #     submit_to_testflight: true
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
