@@ -7,11 +7,8 @@ workflows:
       app_store_connect: APIKey
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.griffservices.griffservices   # ← double-check this exact match
-
       vars:
+        BUNDLE_ID: "com.griffservices.griffservices"   # ← Make sure this is 100% exact
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
       node: 22
@@ -48,6 +45,19 @@ workflows:
             ls -la App.xcworkspace App.xcodeproj || true
             cd ../..
           fi
+
+      # Automatic signing steps
+      - name: Set up keychain
+        script: keychain initialize
+
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Add certificates to keychain
+        script: keychain add-certificates
 
       - name: Set up code signing
         script: xcode-project use-profiles
