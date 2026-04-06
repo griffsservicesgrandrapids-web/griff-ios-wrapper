@@ -9,7 +9,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.griffservices.griffservices   # ← Must be EXACT
+        bundle_identifier: com.griffservices.griffservices
 
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
@@ -44,19 +44,28 @@ workflows:
             if [ -f "Podfile" ]; then
               pod install --repo-update
             fi
-            echo "=== Files after pod install ==="
-            ls -la App.xcworkspace App.xcodeproj || true
             cd ../..
           fi
 
+      # === Manual Code Signing Setup ===
       - name: Set up code signing
-        script: xcode-project use-profiles
+        script: |
+          echo "=== Applying provisioning profiles ==="
+          xcode-project use-profiles \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --bundle-identifier com.griffservices.griffservices
+
+          echo "=== Checking signing settings ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "PROVISIONING_PROFILE|CODE_SIGN_STYLE|DEVELOPMENT_TEAM|PRODUCT_BUNDLE_IDENTIFIER"
 
       - name: Build IPA
         script: |
+          echo "Starting archive..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --archive-flags "CODE_SIGN_STYLE=Manual COMPILER_INDEX_STORE_ENABLE=NO"
 
     artifacts:
       - build/ios/ipa/*.ipa
