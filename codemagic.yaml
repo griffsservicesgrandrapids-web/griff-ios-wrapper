@@ -7,14 +7,10 @@ workflows:
       app_store_connect: APIKey
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.griffservices.griffsservices
-
       vars:
+        BUNDLE_ID: "com.griffservices.griffservices"   # ← Fixed typo
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-
       node: 22
       xcode: latest
       cocoapods: default
@@ -50,11 +46,23 @@ workflows:
             cd ../..
           fi
 
-      - name: Set up code signing
+      # === NEW SIGNING SECTION (Automatic) ===
+      - name: Set up keychain
+        script: keychain initialize
+
+      - name: Fetch App Store signing files
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Add certificates to keychain
+        script: keychain add-certificates
+
+      - name: Set up code signing on Xcode project
         script: |
           echo "=== Running use-profiles ==="
           xcode-project use-profiles
-
           echo "=== Signing settings check ==="
           xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "CODE_SIGN_STYLE|DEVELOPMENT_TEAM|PROVISIONING_PROFILE|PRODUCT_BUNDLE_IDENTIFIER" || echo "No signing info found"
 
