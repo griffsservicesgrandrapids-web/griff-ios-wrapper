@@ -14,18 +14,31 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
+        VERSION: "1.0"
+        BUILD_NUMBER: "2"          # ← Change to 3 next time, etc.
+
       node: 22
       xcode: latest
 
     scripts:
+      - name: Install npm dependencies
+        script: npm ci
+
       - name: Capacitor Setup
         script: |
-          npm ci
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
           rm -rf ios/
           npx cap add ios
           npm run build
           npx cap sync ios
+
+      - name: Set Version & Build Number
+        script: |
+          xcode-project set-version \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --version "$VERSION" \
+            --build-number "$BUILD_NUMBER"
 
       - name: Set up code signing
         script: xcode-project use-profiles --project "$XCODE_PROJECT"
