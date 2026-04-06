@@ -50,17 +50,18 @@ workflows:
       - name: Set up code signing
         script: |
           echo "=== Applying provisioning profiles ==="
-          xcode-project use-profiles \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+          # Simplified - no --scheme argument
+          xcode-project use-profiles --project "$XCODE_PROJECT"
+
+          echo "=== Checking signing settings ==="
+          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "PROVISIONING_PROFILE|CODE_SIGN_STYLE|PRODUCT_BUNDLE_IDENTIFIER" || true
 
       - name: Build IPA
         script: |
-          echo "Starting archive with export options..."
+          echo "Starting archive..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --export-options-plist /Users/builder/export_options.plist
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
