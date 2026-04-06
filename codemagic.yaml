@@ -14,6 +14,9 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
+        TEAM_ID: "32K5KT8DDH"
+        PROFILE_NAME: "Mobile Provision"
+
       node: 22
       xcode: latest
       cocoapods: default
@@ -30,14 +33,17 @@ workflows:
           npm run build
           npx cap sync ios
 
-          echo "=== Project structure after sync ==="
-          ls -la ios/
-          ls -la ios/App/
-
       - name: Set up code signing
         script: |
-          echo "=== Setting up code signing ==="
-          xcode-project use-profiles --project "$XCODE_PROJECT"
+          echo "=== Forcing Team ID and Profile ==="
+          xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -sdk iphoneos
 
       - name: Build IPA
         script: |
