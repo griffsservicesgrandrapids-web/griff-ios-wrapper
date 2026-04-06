@@ -30,20 +30,29 @@ workflows:
           npm run build
           npx cap sync ios
 
+          echo "=== Directory structure after sync ==="
+          ls -la ios/
+          ls -la ios/App/
+          ls -la ios/App/App/ || true
+
       - name: Install CocoaPods
         script: |
-          echo "=== Installing CocoaPods ==="
+          echo "=== Looking for Podfile ==="
           if [ -f "ios/App/Podfile" ]; then
+            echo "Found Podfile at ios/App/Podfile"
             cd ios/App
             pod install --repo-update
-            echo "Pod install completed"
-            ls -la
-            cd ../..
+          elif [ -f "ios/App/App/Podfile" ]; then
+            echo "Found Podfile at ios/App/App/Podfile"
+            cd ios/App/App
+            pod install --repo-update
           else
-            echo "ERROR: Podfile not found at ios/App/Podfile"
-            ls -la ios/App/
+            echo "ERROR: Podfile not found in expected locations"
+            find ios -name "Podfile" -type f
             exit 1
           fi
+          echo "Pod install completed"
+          cd ../..
 
       - name: Set up code signing
         script: |
