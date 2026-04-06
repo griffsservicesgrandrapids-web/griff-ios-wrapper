@@ -7,9 +7,9 @@ workflows:
       app_store_connect: APIKey
 
     environment:
-      ios_signing:                          # ← Manual mode - this stops the fetch error
+      ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.griffservices.griffservices
+        bundle_identifier: com.griffservices.griffservices   # ← Must be EXACT
 
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
