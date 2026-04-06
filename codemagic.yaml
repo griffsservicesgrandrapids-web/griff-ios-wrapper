@@ -14,9 +14,6 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        TEAM_ID: "32K5KT8DDH"
-        PROFILE_NAME: "Mobile Provision"
-
       node: 22
       xcode: latest
       cocoapods: default
@@ -25,7 +22,7 @@ workflows:
       - name: Install npm dependencies
         script: npm ci
 
-      - name: Ensure Capacitor CLI and Sync iOS
+      - name: Capacitor Setup
         script: |
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
           rm -rf ios/
@@ -33,41 +30,18 @@ workflows:
           npm run build
           npx cap sync ios
 
-      - name: Install CocoaPods
+      - name: CocoaPods
         script: |
-          if [ -d "ios/App" ]; then
-            cd ios/App
-            if [ -f "Podfile" ]; then
-              pod install --repo-update
-            fi
-            cd ../..
-          fi
+          cd ios/App && pod install --repo-update && cd ../..
 
-      - name: Set up code signing
-        script: |
-          echo "=== Applying use-profiles ==="
-          xcode-project use-profiles --project "$XCODE_PROJECT"
-
-          echo "=== Forcing profile and team ==="
-          xcodebuild -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            -sdk iphoneos
+      - name: Code Signing
+        script: xcode-project use-profiles --project "$XCODE_PROJECT"
 
       - name: Build IPA
-        script: |
-          echo "Starting archive..."
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
