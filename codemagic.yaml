@@ -8,7 +8,7 @@ workflows:
 
     environment:
       vars:
-        BUNDLE_ID: "com.griffservices.griffservices"   # ← Make sure this is 100% exact
+        BUNDLE_ID: "com.griffservices.griffservices"   # ← MUST be exact match
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
       node: 22
@@ -46,7 +46,7 @@ workflows:
             cd ../..
           fi
 
-      # Automatic signing steps
+      # === Automatic signing (this should now work) ===
       - name: Set up keychain
         script: keychain initialize
 
