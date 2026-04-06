@@ -15,7 +15,7 @@ workflows:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         TEAM_ID: "32K5KT8DDH"
-        PROFILE_NAME: "Mobile Provision"     # ← Your exact profile name
+        PROFILE_NAME: "Mobile Provision"
 
       node: 22
       xcode: latest
@@ -45,10 +45,10 @@ workflows:
 
       - name: Set up code signing
         script: |
-          echo "=== Applying profiles with xcode-project ==="
+          echo "=== Applying use-profiles ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
 
-          echo "=== Forcing Team ID and Provisioning Profile ==="
+          echo "=== Forcing profile and team ==="
           xcodebuild -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
