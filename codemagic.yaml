@@ -7,8 +7,11 @@ workflows:
       app_store_connect: APIKey
 
     environment:
+      ios_signing:                          # ← This is key for manual-style
+        distribution_type: app_store
+        bundle_identifier: com.griffservices.griffservices
+
       vars:
-        BUNDLE_ID: "com.griffservices.griffservices"   # ← MUST be exact match
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
       node: 22
@@ -46,24 +49,14 @@ workflows:
             cd ../..
           fi
 
-      # === Automatic signing (this should now work) ===
-      - name: Set up keychain
-        script: keychain initialize
-
-      - name: Fetch signing files
-        script: |
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-
-      - name: Add certificates to keychain
-        script: keychain add-certificates
-
       - name: Set up code signing
-        script: xcode-project use-profiles
+        script: |
+          echo "=== Running use-profiles ==="
+          xcode-project use-profiles
 
       - name: Build IPA
         script: |
+          echo "Starting archive..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME"
