@@ -47,14 +47,20 @@ workflows:
             cd ../..
           fi
 
-      - name: Set up code signing
+      - name: Set up code signing (Manual)
         script: |
-          echo "=== Applying provisioning profiles ==="
-          # Simplified - no --scheme argument
+          echo "=== Setting Manual Code Signing ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
 
-          echo "=== Checking signing settings ==="
-          xcodebuild -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" -showBuildSettings | grep -E "PROVISIONING_PROFILE|CODE_SIGN_STYLE|PRODUCT_BUNDLE_IDENTIFIER" || true
+          echo "=== Forcing provisioning profile ==="
+          # Force the provisioning profile directly
+          /usr/bin/xcrun xcodebuild -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            PROVISIONING_PROFILE_SPECIFIER="GriffServices App Store Profile" \   # ← Change this if your profile name is different
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            -showBuildSettings | grep -E "PROVISIONING_PROFILE|CODE_SIGN_STYLE"
 
       - name: Build IPA
         script: |
