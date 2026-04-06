@@ -14,7 +14,8 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        PROFILE_NAME: "GriffServices App Store Profile"   # ← CHANGE THIS to your exact profile name
+        TEAM_ID: "32K5KT8DDH"                    # ← CHANGE THIS to your actual Team ID
+        PROFILE_NAME: "GriffServices App Store Profile"   # ← Make sure this matches exactly
 
       node: 22
       xcode: latest
@@ -44,13 +45,14 @@ workflows:
 
       - name: Set up code signing
         script: |
-          echo "=== Using xcode-project use-profiles ==="
+          echo "=== Applying profiles ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
 
-          echo "=== Forcing provisioning profile ==="
+          echo "=== Forcing Team ID and Profile ==="
           xcodebuild -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
