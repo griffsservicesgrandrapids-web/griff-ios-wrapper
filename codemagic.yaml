@@ -22,7 +22,7 @@ workflows:
       - name: Install npm dependencies
         script: npm ci
 
-      - name: Capacitor Setup
+      - name: Ensure Capacitor CLI and Sync iOS
         script: |
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
           rm -rf ios/
@@ -30,18 +30,36 @@ workflows:
           npm run build
           npx cap sync ios
 
-      - name: CocoaPods
+      - name: Install CocoaPods
         script: |
-          cd ios/App && pod install --repo-update && cd ../..
+          echo "=== Installing CocoaPods ==="
+          if [ -f "ios/App/Podfile" ]; then
+            cd ios/App
+            pod install --repo-update
+            echo "Pod install completed"
+            ls -la
+            cd ../..
+          else
+            echo "ERROR: Podfile not found at ios/App/Podfile"
+            ls -la ios/App/
+            exit 1
+          fi
 
-      - name: Code Signing
-        script: xcode-project use-profiles --project "$XCODE_PROJECT"
+      - name: Set up code signing
+        script: |
+          echo "=== Setting up code signing ==="
+          xcode-project use-profiles --project "$XCODE_PROJECT"
 
       - name: Build IPA
-        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+        script: |
+          echo "Starting archive..."
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
