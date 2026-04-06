@@ -22,7 +22,7 @@ workflows:
       - name: Install npm dependencies
         script: npm ci
 
-      - name: Ensure Capacitor CLI and Sync iOS
+      - name: Capacitor Setup
         script: |
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
           rm -rf ios/
@@ -30,29 +30,24 @@ workflows:
           npm run build
           npx cap sync ios
 
-          echo "=== Directory structure after sync ==="
-          ls -la ios/
-          ls -la ios/App/
-          ls -la ios/App/App/ || true
+          echo "=== Full directory structure after sync ==="
+          find ios -type f -name "Podfile" -o -name "*.xcodeproj" -o -name "*.xcworkspace" | head -20
 
       - name: Install CocoaPods
         script: |
-          echo "=== Looking for Podfile ==="
-          if [ -f "ios/App/Podfile" ]; then
-            echo "Found Podfile at ios/App/Podfile"
-            cd ios/App
+          echo "=== Searching for Podfile ==="
+          PODFILE_PATH=$(find ios -name "Podfile" -type f | head -1)
+
+          if [ -n "$PODFILE_PATH" ]; then
+            echo "Found Podfile at: $PODFILE_PATH"
+            cd "$(dirname "$PODFILE_PATH")"
             pod install --repo-update
-          elif [ -f "ios/App/App/Podfile" ]; then
-            echo "Found Podfile at ios/App/App/Podfile"
-            cd ios/App/App
-            pod install --repo-update
+            echo "Pod install completed"
           else
-            echo "ERROR: Podfile not found in expected locations"
-            find ios -name "Podfile" -type f
+            echo "ERROR: No Podfile found anywhere in ios/ directory"
+            ls -laR ios/
             exit 1
           fi
-          echo "Pod install completed"
-          cd ../..
 
       - name: Set up code signing
         script: |
