@@ -14,7 +14,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        PROFILE_NAME: "GriffServices App Store Profile"   # ← CHANGE THIS if your profile name is different
+        PROFILE_NAME: "GriffServices App Store Profile"   # ← CHANGE THIS to your exact profile name
 
       node: 22
       xcode: latest
@@ -22,8 +22,7 @@ workflows:
 
     scripts:
       - name: Install npm dependencies
-        script: |
-          npm ci
+        script: npm ci
 
       - name: Ensure Capacitor CLI and Sync iOS
         script: |
@@ -45,17 +44,17 @@ workflows:
 
       - name: Set up code signing
         script: |
-          echo "=== Applying provisioning profiles ==="
+          echo "=== Using xcode-project use-profiles ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
 
-          echo "=== Forcing provisioning profile by name ==="
+          echo "=== Forcing provisioning profile ==="
           xcodebuild -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
             PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
             CODE_SIGN_STYLE=Manual \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            -showBuildSettings | cat
+            -sdk iphoneos
 
       - name: Build IPA
         script: |
