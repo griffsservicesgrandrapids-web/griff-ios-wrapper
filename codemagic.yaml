@@ -14,19 +14,13 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        TEAM_ID: "32K5KT8DDH"
-        PROFILE_NAME: "GriffAppStore"
-
       node: 22
       xcode: latest
-      cocoapods: default
 
     scripts:
-      - name: Install npm dependencies
-        script: npm ci
-
       - name: Capacitor Setup
         script: |
+          npm ci
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
           rm -rf ios/
           npx cap add ios
@@ -34,25 +28,13 @@ workflows:
           npx cap sync ios
 
       - name: Set up code signing
-        script: |
-          xcodebuild -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            -sdk iphoneos
+        script: xcode-project use-profiles --project "$XCODE_PROJECT"
 
       - name: Build IPA
-        script: |
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME"
+        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
 
     publishing:
       app_store_connect:
