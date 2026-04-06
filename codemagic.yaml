@@ -9,7 +9,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.griffservices.griffservices
+        bundle_identifier: com.griffservices.griffservices   # ← extremely important
 
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
@@ -20,8 +20,7 @@ workflows:
 
     scripts:
       - name: Install npm dependencies
-        script: |
-          npm ci
+        script: npm ci
 
       - name: Ensure Capacitor CLI
         script: |
@@ -47,20 +46,10 @@ workflows:
             cd ../..
           fi
 
-      - name: Set up code signing (Manual)
+      - name: Set up code signing
         script: |
-          echo "=== Setting Manual Code Signing ==="
+          echo "=== Applying profiles ==="
           xcode-project use-profiles --project "$XCODE_PROJECT"
-
-          echo "=== Forcing provisioning profile ==="
-          # Force the provisioning profile directly
-          /usr/bin/xcrun xcodebuild -project "$XCODE_PROJECT" \
-            -scheme "$XCODE_SCHEME" \
-            -configuration Release \
-            PROVISIONING_PROFILE_SPECIFIER="GriffServices App Store Profile" \   # ← Change this if your profile name is different
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            -showBuildSettings | grep -E "PROVISIONING_PROFILE|CODE_SIGN_STYLE"
 
       - name: Build IPA
         script: |
