@@ -14,7 +14,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUILD_NUMBER: "6"          # Increase this every time
+        BUILD_NUMBER: "8"          # Increase this every time
 
       node: 22
       xcode: latest
