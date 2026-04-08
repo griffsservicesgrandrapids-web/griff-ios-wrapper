@@ -141,7 +141,7 @@ export default function WorkerProfile() {
       } else {
         toast.success('Profile created! Awaiting admin approval.');
       }
-      navigate(createPageUrl('WorkerDashboard'));
+      navigate(createPageUrl('worker-dashboard'));
     }
   });
 
