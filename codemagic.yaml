@@ -12,7 +12,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUILD_NUMBER: "10"
+        BUILD_NUMBER: "11"
       node: 22
       xcode: latest
       cocoapods: default
@@ -28,24 +28,27 @@ workflows:
           npm run build
           npx cap sync ios
 
+      - name: Force Podfile creation + CocoaPods
+        script: |
+          echo "=== Checking ios folder structure ==="
+          ls -la ios/
+          ls -la ios/App/
+
+          if [ -f "ios/App/Podfile" ]; then
+            echo "Podfile found - installing pods..."
+            cd ios/App && pod install --repo-update
+          else
+            echo "Podfile missing - running manual pod init..."
+            cd ios/App
+            pod init
+            pod install --repo-update
+          fi
+
       - name: Bump Version & Build Number
         script: |
           echo "Setting version to 1.0.1 and build number to $BUILD_NUMBER"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.1" ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/App/App/Info.plist
-
-      - name: Install CocoaPods
-        script: |
-          echo "=== Looking for Podfile ==="
-          ls -la ios/App/
-          if [ -f "ios/App/Podfile" ]; then
-            echo "Podfile found - running pod install..."
-            cd ios/App && pod install --repo-update
-          else
-            echo "ERROR: Podfile is missing after cap sync!"
-            ls -la ios/
-            exit 1
-          fi
 
       - name: Set up code signing
         script: xcode-project use-profiles
