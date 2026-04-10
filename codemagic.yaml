@@ -12,7 +12,7 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUILD_NUMBER: "11"
+        BUILD_NUMBER: "12"
       node: 22
       xcode: latest
       cocoapods: default
@@ -28,19 +28,15 @@ workflows:
           npm run build
           npx cap sync ios
 
-      - name: Install CocoaPods (Fixed)
+      - name: Install CocoaPods
         script: |
-          echo "=== Checking for Podfile ==="
+          echo "=== Podfile check ==="
           ls -la ios/App/
-          
           if [ -f "ios/App/Podfile" ]; then
-            echo "Podfile found. Running pod install..."
             cd ios/App
             pod install --repo-update
-            echo "=== Pod install completed ==="
-            ls -la .
           else
-            echo "Podfile missing! Trying manual fix..."
+            echo "Podfile missing - trying manual pod init"
             cd ios/App
             pod init
             pod install --repo-update
@@ -48,7 +44,7 @@ workflows:
 
       - name: Bump Version & Build Number
         script: |
-          echo "Setting version to 1.0.1 and build number to $BUILD_NUMBER"
+          echo "Setting version 1.0.1 + build $BUILD_NUMBER"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.1" ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/App/App/Info.plist
 
@@ -57,11 +53,9 @@ workflows:
 
       - name: Build IPA
         script: |
-          echo "=== Building IPA ==="
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --workspace "ios/App/App.xcworkspace"
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
