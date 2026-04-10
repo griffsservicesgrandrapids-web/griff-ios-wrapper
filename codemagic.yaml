@@ -8,7 +8,7 @@ workflows:
 
     environment:
       ios_signing:
-        distribution_type: ad-hoc
+        distribution_type: ad_hoc
         bundle_identifier: com.griffservices.griffservices
 
       vars:
