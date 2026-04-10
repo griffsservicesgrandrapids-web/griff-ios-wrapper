@@ -19,6 +19,7 @@ workflows:
     scripts:
       - name: Install npm dependencies
         script: npm ci
+
       - name: Capacitor Setup
         script: |
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
@@ -26,19 +27,32 @@ workflows:
           npx cap add ios
           npm run build
           npx cap sync ios
+
       - name: Bump Version & Build Number
         script: |
           echo "Setting version to 1.0.1 and build number to $BUILD_NUMBER"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.1" ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/App/App/Info.plist
+
       - name: Install CocoaPods
         script: |
-          cd ios/App && pod install --repo-update
+          echo "=== Looking for Podfile ==="
+          ls -la ios/App/
+          if [ -f "ios/App/Podfile" ]; then
+            echo "Podfile found - running pod install..."
+            cd ios/App && pod install --repo-update
+          else
+            echo "ERROR: Podfile is missing after cap sync!"
+            ls -la ios/
+            exit 1
+          fi
+
       - name: Set up code signing
         script: xcode-project use-profiles
+
       - name: Build IPA
         script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-    # Publishing disabled for now
