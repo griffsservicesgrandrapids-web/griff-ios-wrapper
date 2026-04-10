@@ -5,24 +5,20 @@ workflows:
     max_build_duration: 120
     integrations:
       app_store_connect: APIKey
-
     environment:
       ios_signing:
-        distribution_type: ad_hoc
+        distribution_type: app_store
         bundle_identifier: com.griffservices.griffservices
-
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUILD_NUMBER: "9"          # Increase this every time
-
+        BUILD_NUMBER: "10"
       node: 22
       xcode: latest
-
+      cocoapods: default
     scripts:
       - name: Install npm dependencies
         script: npm ci
-
       - name: Capacitor Setup
         script: |
           npm install --save-dev @capacitor/cli@latest @capacitor/core@latest @capacitor/ios@latest
@@ -30,24 +26,19 @@ workflows:
           npx cap add ios
           npm run build
           npx cap sync ios
-
-      - name: Bump Build Number
+      - name: Bump Version & Build Number
         script: |
-          echo "Setting build number to $BUILD_NUMBER"
+          echo "Setting version to 1.0.1 and build number to $BUILD_NUMBER"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.1" ios/App/App/Info.plist
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/App/App/Info.plist
-
+      - name: Install CocoaPods
+        script: |
+          cd ios/App && pod install --repo-update
       - name: Set up code signing
-        script: xcode-project use-profiles --project "$XCODE_PROJECT"
-
+        script: xcode-project use-profiles
       - name: Build IPA
         script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
-
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
-
-    # Publishing disabled for now to get a clean build
-    # publishing:
-    #   app_store_connect:
-    #     auth: integration
-    #     submit_to_testflight: true
+    # Publishing disabled for now
