@@ -28,17 +28,19 @@ workflows:
           npm run build
           npx cap sync ios
 
-      - name: Force Podfile creation + CocoaPods
+      - name: Install CocoaPods (Fixed)
         script: |
-          echo "=== Checking ios folder structure ==="
-          ls -la ios/
+          echo "=== Checking for Podfile ==="
           ls -la ios/App/
-
+          
           if [ -f "ios/App/Podfile" ]; then
-            echo "Podfile found - installing pods..."
-            cd ios/App && pod install --repo-update
+            echo "Podfile found. Running pod install..."
+            cd ios/App
+            pod install --repo-update
+            echo "=== Pod install completed ==="
+            ls -la .
           else
-            echo "Podfile missing - running manual pod init..."
+            echo "Podfile missing! Trying manual fix..."
             cd ios/App
             pod init
             pod install --repo-update
@@ -54,7 +56,12 @@ workflows:
         script: xcode-project use-profiles
 
       - name: Build IPA
-        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
+        script: |
+          echo "=== Building IPA ==="
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --workspace "ios/App/App.xcworkspace"
 
     artifacts:
       - build/ios/ipa/*.ipa
