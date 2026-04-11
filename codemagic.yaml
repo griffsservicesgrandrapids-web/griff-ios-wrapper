@@ -7,7 +7,7 @@ workflows:
       app_store_connect: APIKey
     environment:
       ios_signing:
-        distribution_type: ad_hoc
+        distribution_type: app_store
         bundle_identifier: com.griffservices.griffservices
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
