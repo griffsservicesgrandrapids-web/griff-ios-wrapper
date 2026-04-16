@@ -12,7 +12,8 @@ workflows:
       vars:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
-        BUILD_NUMBER: "12"
+        VERSION: "1.0"
+        BUILD_NUMBER: "10"          # ← Increased for new build
       node: 22
       xcode: latest
       cocoapods: default
@@ -28,38 +29,23 @@ workflows:
           npm run build
           npx cap sync ios
 
-      - name: CocoaPods Fix
+      - name: Bump Build Number
         script: |
-          echo "=== Forcing CocoaPods setup ==="
-          cd ios/App
-          if [ -f "Podfile" ]; then
-            echo "Podfile exists - cleaning and installing..."
-            rm -rf Pods Podfile.lock
-            pod install --repo-update
-          else
-            echo "No Podfile - creating one..."
-            pod init
-            pod install --repo-update
-          fi
-          echo "=== Pods folder check ==="
-          ls -la Pods/
-
-      - name: Bump Version & Build Number
-        script: |
-          echo "Setting version 1.0.1 + build $BUILD_NUMBER"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 1.0.1" ios/App/App/Info.plist
+          echo "Setting build number to $BUILD_NUMBER"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/App/App/Info.plist
 
       - name: Set up code signing
-        script: xcode-project use-profiles
+        script: xcode-project use-profiles --project "$XCODE_PROJECT"
 
       - name: Build IPA
-        script: |
-          echo "=== Building with workspace ==="
-          xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
-            --scheme "$XCODE_SCHEME"
+        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
+
+    # Re-enabled publishing
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
