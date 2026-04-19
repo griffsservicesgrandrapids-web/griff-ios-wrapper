@@ -123,17 +123,31 @@ export default function WorkerProfile() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: async (data) => {
-      if (existingProfile) {
-        return base44.entities.WorkerProfile.update(existingProfile.id, data);
-      } else {
-        return base44.entities.WorkerProfile.create({
-          ...data,
-          user_email: user.email,
-          is_approved: false
-        });
-      }
-    },
+  mutationFn: async (data) => {
+    if (existingProfile) {
+      return base44.entities.WorkerProfile.update(existingProfile.id, data);
+    } else {
+      return base44.entities.WorkerProfile.create({
+        ...data,
+        user_email: user?.email || '',
+        is_approved: false
+      });
+    }
+  },
+  onSuccess: (data, variables, context) => {
+    queryClient.invalidateQueries({ queryKey: ['worker-profile'] });
+    if (existingProfile) {
+      toast.success('Profile updated successfully!');
+    } else {
+      toast.success('Profile created! Awaiting admin approval.');
+    }
+    navigate('/worker-dashboard');
+  },
+  onError: (error) => {
+    console.error('Profile save error:', error);
+    toast.error('Failed to save profile. Please try again.');
+  }
+});
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ['worker-profile'] });
       if (existingProfile) {
