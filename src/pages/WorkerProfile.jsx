@@ -148,17 +148,6 @@ export default function WorkerProfile() {
     toast.error('Failed to save profile. Please try again.');
   }
 });
-    onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ['worker-profile'] });
-      if (existingProfile) {
-        toast.success('Profile updated successfully!');
-      } else {
-        toast.success('Profile created! Awaiting admin approval.');
-      }
-      navigate('/worker-dashboard');
-    }
-  });
-
   const toggleService = (service) => {
     setFormData(prev => ({
       ...prev,
