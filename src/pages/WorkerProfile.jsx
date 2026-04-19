@@ -122,7 +122,7 @@ export default function WorkerProfile() {
     }
   });
 
-  const saveMutation = useMutation({
+ const saveMutation = useMutation({
   mutationFn: async (data) => {
     if (existingProfile) {
       return base44.entities.WorkerProfile.update(existingProfile.id, data);
