@@ -141,7 +141,7 @@ export default function WorkerProfile() {
     } else {
       toast.success('Profile created! Awaiting admin approval.');
     }
-    navigate('/worker-dashboard');
+    navigate('/worker/profile');
   },
   onError: (error) => {
     console.error('Profile save error:', error);
