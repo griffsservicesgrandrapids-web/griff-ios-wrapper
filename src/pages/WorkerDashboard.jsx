@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -20,7 +21,7 @@ export default function WorkerDashboard() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('available');
   const queryClient = useQueryClient();
-
+const navigate = useNavigate();
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
@@ -101,12 +102,13 @@ export default function WorkerDashboard() {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Set Up Your Profile</h2>
           <p className="text-slate-300 mb-6">Create your worker profile to start receiving gigs</p>
-          <Link to={createPageUrl('WorkerProfile')}>
-            <Button className="bg-orange-500 hover:bg-orange-600 rounded-xl px-6">
-              <Settings className="w-4 h-4 mr-2" />
-              Create Profile
-            </Button>
-          </Link>
+          <Button 
+    onClick={() => navigate(createPageUrl('WorkerProfile'))}
+    className="bg-orange-500 hover:bg-orange-600 rounded-xl px-6"
+>
+    <Settings className="w-4 h-4 mr-2" />
+    Create Profile
+</Button>
         </motion.div>
       </div>
     );
