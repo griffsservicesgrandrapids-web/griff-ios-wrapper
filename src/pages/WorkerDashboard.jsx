@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+Flink timport { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -132,12 +132,14 @@ const navigate = useNavigate();
           <p className="text-sm text-slate-400">
             You'll be notified once your profile is approved and you can start accepting gigs.
           </p>
-          <Link to={createPageUrl('WorkerProfile')} className="mt-6 inline-block">
-            <Button variant="outline" className="rounded-xl border-orange-500/50 text-orange-400 hover:bg-orange-500/10">
-              <User className="w-4 h-4 mr-2" />
-              View Profile
-            </Button>
-          </Link>
+          <Button 
+  onClick={() => navigate(createPageUrl('WorkerProfile'))}
+  variant="outline" 
+  className="mt-6 rounded-xl border-orange-500/50 text-orange-400 hover:bg-orange-500/10"
+>
+  <User className="w-4 h-4 mr-2" />
+  View Profile
+</Button>
         </motion.div>
       </div>
     );
