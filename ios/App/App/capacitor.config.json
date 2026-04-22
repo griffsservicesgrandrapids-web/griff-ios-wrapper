@@ -1,6 +1,6 @@
 {
-	"appId": "com.griffservices.griffsservices",
+	"appId": "com.griffservices.griffservices",
 	"appName": "Griff's Services",
 	"webDir": "dist",
-	"packageClassList": []
+	"bundledWebRuntime": false
 }

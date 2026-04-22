@@ -135,15 +135,14 @@ export default function WorkerProfile() {
     }
   },
   onSuccess: (data, variables, context) => {
-    queryClient.invalidateQueries({ queryKey: ['worker-profile'] });
-    if (existingProfile) {
-      toast.success('Profile updated successfully!');
-    } else {
-      toast.success('Profile created! Awaiting admin approval.');
-    }
-    navigate('/WorkerProfile');
-  },
-  onError: (error) => {
+  queryClient.invalidateQueries({ queryKey: ['worker-profile'] });
+  if (existingProfile) {
+    toast.success('Profile updated successfully!');
+  } else {
+    toast.success('Profile created! Awaiting admin approval.');
+  }
+  navigate(createPageUrl('WorkerDashboard'));
+  },  onError: (error) => {
     console.error('Profile save error:', error);
     toast.error('Failed to save profile. Please try again.');
   }
@@ -159,6 +158,7 @@ export default function WorkerProfile() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log('Submitting form data:', formData);
     saveMutation.mutate(formData);
   };
 

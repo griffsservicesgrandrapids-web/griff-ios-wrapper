@@ -85,7 +85,7 @@ html, body {
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-slate-50 text-foreground;
   }
 
   button, a[role="button"], [role="button"] {

@@ -211,7 +211,13 @@ export default function Layout({ children, currentPageName }) {
       </header>
 
       {/* Main Content — add bottom padding on mobile to account for tab bar */}
-      <main className={`pt-16 ${hasBottomBar ? 'pb-20 md:pb-0' : ''}`}>
+      <main 
+        className={`${hasBottomBar ? 'pb-24 md:pb-0' : ''}`}
+        style={{ 
+          paddingTop: 'calc(4rem + env(safe-area-inset-top))',
+          paddingBottom: hasBottomBar ? 'calc(5rem + env(safe-area-inset-bottom))' : 'env(safe-area-inset-bottom)'
+        }}
+      >
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentPageName}
