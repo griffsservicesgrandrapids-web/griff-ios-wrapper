@@ -13,7 +13,7 @@ workflows:
         XCODE_PROJECT: "ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
         VERSION: "1.0"
-        BUILD_NUMBER: "22"          # ← Increased for new build
+        BUILD_NUMBER: "23"          # ← Increased for new build
       node: 22
       xcode: latest
       cocoapods: default
